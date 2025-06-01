@@ -94,7 +94,27 @@ if __name__ == "__main__":
     print(f"Running task {task} with model {model}")
 
     if task == "tweets":
-        tweets = pd.read_csv("data/application1-TweetNLP.csv", index_col=0)
+        tweets = pd.read_csv("data/tweets-original.csv", index_col=0)
+        system_message_gemma = """You are a helpful assistant. Your job is to classify tweets posted the day after the US Supreme Court ruled in favor of a baker who refused to bake a wedding cake for a same-sex couple. For each tweet, decide whether its sentiment is Positive, Neutral, or Negative. Provide a one-word response as in the examples below.
+
+        Tweet: #SCOTUS set a dangerous precedent today. Although the Court limited the scope to which a business owner could deny services to patrons, the legal argument has been legitimized that one's subjective religious convictions trump (no pun intended) #humanrights.
+        Sentiment: Negative
+
+        Tweet: Thank you Supreme Court I take pride in your decision!!!!! #SCOTUS
+        Sentiment: Positive
+
+        Tweet: Supreme Court rules in favor of baker who would not make wedding cake for gay couple
+        Sentiment: Neutral
+
+        Tweet: Supreme Court rules in favorr of Colorado baker! This day is getting better by the minute!
+        Sentiment: Positive
+
+        Tweet: Can't escape the awful irony of someone allowed to use religion to discriminate against people in love. Not my Jesus. #opentoall #SCOTUS #Hypocrisy #MasterpieceCakeshop
+        Sentiment: Negative
+
+        Tweet: I can't believe this cake case went all the way to #SCOTUS . Can someone let me know what cake was ultimately served at the wedding? Are they married and living happily ever after?
+        Sentiment: Neutral
+        """
         system_message = """
         You are a helpful assistant. I will present you with tweets posted the day after the US Supreme Court ruled in favor of a baker who refused to bake a wedding cake for a same-sex couple. For each tweet, decide whether its sentiment is Positive, Neutral, or Negative as in the examples shown below. Give a one word response.
 
@@ -120,11 +140,11 @@ if __name__ == "__main__":
         def label_tweet(tweets: pd.DataFrame, idx: int) -> None:
             tweet = tweets.at[idx, 'raw.text']
             print(f"[{idx}] Processing tweet: {tweet}")
-            
+
             if tweet is None:
                 print("> No text found. Skipping.")
                 return
-            
+
             response = client.chat.completions.create(
                 model=None,
                 messages=[
@@ -142,7 +162,7 @@ if __name__ == "__main__":
                 logprobs=True,
                 top_logprobs=3,
             )
-            
+
             choices = response.choices[0].logprobs.content[0].top_logprobs
             tweets.at[idx, 'choice_1'] = choices[0].token
             tweets.at[idx, 'logprob_1'] = choices[0].logprob
@@ -155,11 +175,26 @@ if __name__ == "__main__":
         tweets.to_csv(f"data/tweets-{model}.csv", index=False)
 
     elif task == "ads":
-        ads = pd.read_csv("data/application2-carlson-montgomery-2017.csv")
+        ads = pd.read_csv("data/ads-original.csv")
+        system_message_gemma = """
+        You are a helpful assistant. Your job is to classify the text of political advertisements. For each advertisement, decide whether its tone is Positive, Negative, or Neutral. Give a one-word response as in the example below.
+
+        Ad: [Announcer]: Mark Udall claims he voted for tax cuts 65 times.
+        [Reporter]: "Actually it's not true."
+        [Mark Udall]: "I'm just kidding."
+        Udall claims that now he supports our troops, drilling off shore, bi-partisanship.
+        [Mark Udall]: "I'm just kidding."
+        [Announcer]: But through his career he has opposed them all. Udall has a lot of ads, but a shortage of truth.
+        [Mark Udall]: "I'm just kidding."
+        [Announcer]: Mark Udall is not honest about his past and now it's catching up with him.
+        The National Republican Senatorial Committee is responsible for the content of this advertising.
+        [PFB]: NATIONAL REPUBLICAN SENATORIAL COMMITTEE (9)
+        Tone: Negative
+        """
         system_message = """
         You are a helpful assistant. I will provide you with the text of political advertisements. For each ad, decide whether its tone is Positive, Negative, or Neutral. Give a one-word response as in the example below.
 
-        Ad Text: [Announcer]: Mark Udall claims he voted for tax cuts 65 times.
+        Ad: [Announcer]: Mark Udall claims he voted for tax cuts 65 times.
         [Reporter]: "Actually it's not true."
         [Mark Udall]: "I'm just kidding."
         Udall claims that now he supports our troops, drilling off shore, bi-partisanship.
@@ -174,11 +209,11 @@ if __name__ == "__main__":
         def label_ad(ads: pd.DataFrame, idx: int) -> None:
             ad = ads.at[idx, 'text']
             print(f"[{idx}] Processing ad: {ad}")
-            
+
             if ad is None:
                 print("> No text found. Skipping.")
                 return
-            
+
             response = client.chat.completions.create(
                 model=None,
                 messages=[
@@ -188,7 +223,7 @@ if __name__ == "__main__":
                     },
                     {
                         "role": "user",
-                        "content": f"Ad: {ad}\nTone:"
+                        "content": f"Ad: {ad}"
                     },
                 ],
                 max_tokens=16,
@@ -196,7 +231,7 @@ if __name__ == "__main__":
                 logprobs=True,
                 top_logprobs=3,
             )
-            
+
             choices = response.choices[0].logprobs.content[0].top_logprobs
             ads.at[idx, 'choice_1'] = choices[0].token
             ads.at[idx, 'logprob_1'] = choices[0].logprob
@@ -209,7 +244,13 @@ if __name__ == "__main__":
         ads.to_csv(f"data/ads-{model}.csv", index=False)
 
     elif task == "manifestos":
-        manifestos = pd.read_csv("data/application3-one-shot-gpt-3-ideology.csv", index_col=0)
+        manifestos = pd.read_csv("data/manifestos-original.csv", index_col=0)
+        system_message_gemma = """
+        You are a helpful assistant. Your job is to classify examples of British political manifestos. Label each manifesto as either Lib (for Liberal), Con (for Conservative), or Neither. Give a one-word response as in the example below.
+
+        Sentence: We will implement a comprehensive strategy for ending low pay, notably by the introduction of a statutory national minimum wage.
+        Classification: Lib
+        """
         system_message = """
         You are a helpful assistant. I will provide you with examples of British political manifestos. Classify each manifesto as either Lib (for Liberal), Con (for Conservative), or Neither. Give a one-word response as in the example below.
 
@@ -220,11 +261,11 @@ if __name__ == "__main__":
         def label_manifesto(manifestos: pd.DataFrame, idx: int) -> None:
             manifesto = manifestos.at[idx, 'sentence_text']
             print(f"[{idx}] Processing manifesto: {manifesto}")
-            
+
             if manifesto is None:
                 print("> No text found. Skipping.")
                 return
-            
+
             response = client.chat.completions.create(
                 model=None,
                 messages=[
@@ -242,7 +283,7 @@ if __name__ == "__main__":
                 logprobs=True,
                 top_logprobs=3,
             )
-            
+
             choices = response.choices[0].logprobs.content[0].top_logprobs
             manifestos.at[idx, 'choice_1'] = choices[0].token
             manifestos.at[idx, 'logprob_1'] = choices[0].logprob
@@ -255,7 +296,13 @@ if __name__ == "__main__":
         manifestos.to_csv(f"data/manifestos-{model}.csv", index=False)
 
     elif task == "speeches":
-        speeches = pd.read_csv("data/application4-one-shot-gpt-3.csv", index_col=0)
+        speeches = pd.read_csv("data/speeches-original.csv", index_col=0)
+        system_message_gemma = """
+        You are a helpful assistant. Your job is to identify the virtues praised in Congressional speeches. For each speech, return a list of virtues that it praises as in the following example.
+
+        Speech: Mr. Speaker, I rise today to honor Reagan Myers from Poplar Bluff, Missouri for his years of service with the Salvation Army. Reagan Myers is being honored as the 2014 Mariana Islands Young Citizen of the Year. This award is not easily attained, and can only be achieved by demonstrating a selfless passion for serving and a giving heart. Reagan and his family are serving as missionaries under the auspices of General Baptist International Missions. At only 16 years old, Reagan has demonstrated his commitment to serving those in need in Saipan. Over the past year he has donated many of his own items to the Salvation Army, he has volunteered his time to help in the soup kitchen, and ring the bell at the red kettle location. Reagan has led efforts to provide relief to families who suffered from Typhoon Vongfong. With support from his church, he provides baskets to families in need filled with food, toys, and Bibles. Reagan Myers is a role model for young and old alike, and it is my pleasure to recognize his achievements before the House of Representatives.
+        Virtues: service, achievement, selflessness, passion, commitment, charity, volunteerism, compassion
+        """
         system_message = """
         You are a helpful assistant. I will provide you with examples of Congressional speeches. You should return a list of virtues that they praise as in the following example.
 
@@ -266,11 +313,11 @@ if __name__ == "__main__":
         def categorize_speech(speeches: pd.DataFrame, idx: int) -> None:
             speech = speeches.at[idx, 'speech']
             print(f"[{idx}] Processing speech: {speech}")
-            
+
             if speech is None:
                 print("> No text found. Skipping.")
                 return
-            
+
             response = client.chat.completions.create(
                 model=None,
                 messages=[
@@ -286,7 +333,7 @@ if __name__ == "__main__":
                 max_tokens=16,
                 temperature=0.0,
             )
-            
+
             speeches.at[idx, 'topics'] = response.choices[0].message.content
 
         process_in_parallel(speeches, num_workers=os.cpu_count(), do_task=categorize_speech)
