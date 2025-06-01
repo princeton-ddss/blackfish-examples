@@ -1,0 +1,11 @@
+[project]
+name = "blackfish-examples"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ipython>=9.2.0",
+    "openai>=1.82.1",
+    "pandas>=2.2.3",
+]
