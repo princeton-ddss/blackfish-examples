@@ -115,6 +115,26 @@ if __name__ == "__main__":
         Tweet: I can't believe this cake case went all the way to #SCOTUS . Can someone let me know what cake was ultimately served at the wedding? Are they married and living happily ever after?
         Sentiment: Neutral
         """
+        system_message_llama = """You are a helpful assistant. Your job is to classify tweets posted the day after the US Supreme Court ruled in favor of a baker who refused to bake a wedding cake for a same-sex couple. For each tweet, decide whether its sentiment is Positive, Neutral, or Negative. Provide a one-word response as in the examples below.
+
+        Tweet: #SCOTUS set a dangerous precedent today. Although the Court limited the scope to which a business owner could deny services to patrons, the legal argument has been legitimized that one's subjective religious convictions trump (no pun intended) #humanrights.
+        Sentiment: Negative
+
+        Tweet: Thank you Supreme Court I take pride in your decision!!!!! #SCOTUS
+        Sentiment: Positive
+
+        Tweet: Supreme Court rules in favor of baker who would not make wedding cake for gay couple
+        Sentiment: Neutral
+
+        Tweet: Supreme Court rules in favorr of Colorado baker! This day is getting better by the minute!
+        Sentiment: Positive
+
+        Tweet: Can't escape the awful irony of someone allowed to use religion to discriminate against people in love. Not my Jesus. #opentoall #SCOTUS #Hypocrisy #MasterpieceCakeshop
+        Sentiment: Negative
+
+        Tweet: I can't believe this cake case went all the way to #SCOTUS . Can someone let me know what cake was ultimately served at the wedding? Are they married and living happily ever after?
+        Sentiment: Neutral
+        """
         system_message = """
         You are a helpful assistant. I will present you with tweets posted the day after the US Supreme Court ruled in favor of a baker who refused to bake a wedding cake for a same-sex couple. For each tweet, decide whether its sentiment is Positive, Neutral, or Negative as in the examples shown below. Give a one word response.
 
@@ -145,6 +165,9 @@ if __name__ == "__main__":
                 print("> No text found. Skipping.")
                 return
 
+            if model.startswith("llama"):
+                user_message = f"Tweet: {tweet}\nSentiment:"
+
             response = client.chat.completions.create(
                 model=None,
                 messages=[
@@ -154,7 +177,7 @@ if __name__ == "__main__":
                     },
                     {
                         "role": "user",
-                        "content": f"Tweet: {tweet}"
+                        "content": user_message,
                     },
                 ],
                 max_tokens=16,
@@ -177,6 +200,21 @@ if __name__ == "__main__":
     elif task == "ads":
         ads = pd.read_csv("data/ads-original.csv")
         system_message_gemma = """
+        You are a helpful assistant. Your job is to classify the text of political advertisements. For each advertisement, decide whether its tone is Positive, Negative, or Neutral. Give a one-word response as in the example below.
+
+        Ad: [Announcer]: Mark Udall claims he voted for tax cuts 65 times.
+        [Reporter]: "Actually it's not true."
+        [Mark Udall]: "I'm just kidding."
+        Udall claims that now he supports our troops, drilling off shore, bi-partisanship.
+        [Mark Udall]: "I'm just kidding."
+        [Announcer]: But through his career he has opposed them all. Udall has a lot of ads, but a shortage of truth.
+        [Mark Udall]: "I'm just kidding."
+        [Announcer]: Mark Udall is not honest about his past and now it's catching up with him.
+        The National Republican Senatorial Committee is responsible for the content of this advertising.
+        [PFB]: NATIONAL REPUBLICAN SENATORIAL COMMITTEE (9)
+        Tone: Negative
+        """
+        system_message_llama = """
         You are a helpful assistant. Your job is to classify the text of political advertisements. For each advertisement, decide whether its tone is Positive, Negative, or Neutral. Give a one-word response as in the example below.
 
         Ad: [Announcer]: Mark Udall claims he voted for tax cuts 65 times.
@@ -214,6 +252,10 @@ if __name__ == "__main__":
                 print("> No text found. Skipping.")
                 return
 
+            if model.startswith("llama"):
+                system_message = system_message_llama
+                user_message = f"Ad: {ad}\nTone:"
+
             response = client.chat.completions.create(
                 model=None,
                 messages=[
@@ -223,7 +265,7 @@ if __name__ == "__main__":
                     },
                     {
                         "role": "user",
-                        "content": f"Ad: {ad}"
+                        "content": user_message,
                     },
                 ],
                 max_tokens=16,
@@ -251,6 +293,12 @@ if __name__ == "__main__":
         Sentence: We will implement a comprehensive strategy for ending low pay, notably by the introduction of a statutory national minimum wage.
         Classification: Lib
         """
+        system_message_llama = """
+        You are a helpful assistant. Your job is to classify examples of British political manifestos. Label each manifesto as either Lib (for Liberal), Con (for Conservative), or Neither. Give a one-word response as in the example below.
+
+        Sentence: We will implement a comprehensive strategy for ending low pay, notably by the introduction of a statutory national minimum wage.
+        Classification: Lib
+        """
         system_message = """
         You are a helpful assistant. I will provide you with examples of British political manifestos. Classify each manifesto as either Lib (for Liberal), Con (for Conservative), or Neither. Give a one-word response as in the example below.
 
@@ -266,6 +314,10 @@ if __name__ == "__main__":
                 print("> No text found. Skipping.")
                 return
 
+            if model.startswith("llama"):
+                system_message = system_message_llama
+                user_message = f"Sentence: {manifesto}\nClassification:"
+
             response = client.chat.completions.create(
                 model=None,
                 messages=[
@@ -275,7 +327,7 @@ if __name__ == "__main__":
                     },
                     {
                         "role": "user",
-                        "content": f"Sentence: {manifesto}\nClassification:"
+                        "content": user_message,
                     },
                 ],
                 max_tokens=16,
@@ -303,6 +355,12 @@ if __name__ == "__main__":
         Speech: Mr. Speaker, I rise today to honor Reagan Myers from Poplar Bluff, Missouri for his years of service with the Salvation Army. Reagan Myers is being honored as the 2014 Mariana Islands Young Citizen of the Year. This award is not easily attained, and can only be achieved by demonstrating a selfless passion for serving and a giving heart. Reagan and his family are serving as missionaries under the auspices of General Baptist International Missions. At only 16 years old, Reagan has demonstrated his commitment to serving those in need in Saipan. Over the past year he has donated many of his own items to the Salvation Army, he has volunteered his time to help in the soup kitchen, and ring the bell at the red kettle location. Reagan has led efforts to provide relief to families who suffered from Typhoon Vongfong. With support from his church, he provides baskets to families in need filled with food, toys, and Bibles. Reagan Myers is a role model for young and old alike, and it is my pleasure to recognize his achievements before the House of Representatives.
         Virtues: service, achievement, selflessness, passion, commitment, charity, volunteerism, compassion
         """
+        system_message_llama = """
+        You are a helpful assistant. Your job is to identify the virtues praised in Congressional speeches. For each speech, return a list of at most 8 virtues that it praises as in the following example. Your response should follow the same format as the example starting with "Virtues:".
+
+        Speech: Mr. Speaker, I rise today to honor Reagan Myers from Poplar Bluff, Missouri for his years of service with the Salvation Army. Reagan Myers is being honored as the 2014 Mariana Islands Young Citizen of the Year. This award is not easily attained, and can only be achieved by demonstrating a selfless passion for serving and a giving heart. Reagan and his family are serving as missionaries under the auspices of General Baptist International Missions. At only 16 years old, Reagan has demonstrated his commitment to serving those in need in Saipan. Over the past year he has donated many of his own items to the Salvation Army, he has volunteered his time to help in the soup kitchen, and ring the bell at the red kettle location. Reagan has led efforts to provide relief to families who suffered from Typhoon Vongfong. With support from his church, he provides baskets to families in need filled with food, toys, and Bibles. Reagan Myers is a role model for young and old alike, and it is my pleasure to recognize his achievements before the House of Representatives.
+        Virtues: service, achievement, selflessness, passion, commitment, charity, volunteerism, compassion
+        """
         system_message = """
         You are a helpful assistant. I will provide you with examples of Congressional speeches. You should return a list of virtues that they praise as in the following example.
 
@@ -318,6 +376,10 @@ if __name__ == "__main__":
                 print("> No text found. Skipping.")
                 return
 
+            if model.startswith("llama"):
+                system_message = system_message_llama
+                user_message = f"Speech: {speech}\nVirtues:"
+
             response = client.chat.completions.create(
                 model=None,
                 messages=[
@@ -327,7 +389,7 @@ if __name__ == "__main__":
                     },
                     {
                         "role": "user",
-                        "content": f"Ad: {speech}"
+                        "content": user_message,
                     },
                 ],
                 max_tokens=16,
