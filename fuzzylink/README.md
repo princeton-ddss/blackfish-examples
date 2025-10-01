@@ -1,9 +1,19 @@
 # FuzzyLink
 In his paper “Probabilistic Record Linkage Using Pretrained Text Embeddings,” Joseph Ornstein developed a probabilistic record linkage procedure (dubbed “fuzzylink”) which relies on large language models to determine if two records refer to the same entity. Though his procedure outperformed other algorithms in both precision and recall, his use of closed-source models meant that the models were (1) not free to use and (2) could be modified at any time. When a model is modified or deprecated, any results that were obtained using Ornstein’s method on that model are not fully reproducible. 
 
-[A brief explanation of Ornstein’s method here will help motivate the example].
+Ornstein's fuzzylink algorithm can be broken into the following steps:
+1. Use a model to retrieve text embeddings for the string variables in record _A_ and _B_.
+2. Compute the cosign similarity between the embedding vectors for each pair of recors in the set _A_ x _B_.
+3. Using a subset of the record pairs, label a training set with 1 if the records are a true match and 0 if they are not.
+4. Fit a probabilistic model to map the cosign similarities *(from the labeled subset??)* onto a match probability.
+5. Using the fitted model from step 4, estimate match probabiltiies for all record pairs in _A_ X _B_. Select _N~L~_ record pairs using uncertainty sampling and label them as in Step 3; add these to the training set and repeat steps 4-5 until some criterion is met. (Ornstein stopped when none of the estimated probabilities change by more than 0.01 between iterations.)
+6. Return all record pairs and their match probability 
 
-If you need to merge two records using a probabilistic record linkage procedure and want to do it easily, transparently, and for free, you can use Blackfish to run open source models on a HPC cluster. You will know exactly what models you are using and your results can be reproduced by anyone with access to the same model. The following tutorial will walk through all the steps you need to take to use Ornstein’s fuzzylink approach on your HPC cluster. 
+*CONFIRM ^^*
+
+If you need to merge two records using Ornstein's probabilistic record linkage procedure and want to do it easily, transparently, and for free, you can use Blackfish to run open source models on a HPC cluster. You will know exactly what models you are using and your results can be reproduced by anyone with access to the same model. The following tutorial will walk through all the steps you need to take to use Ornstein’s fuzzylink approach on your HPC cluster. 
+
+The motivation for this example and the original fuzzylink code are all attributed to Joseph Ornstein; Ornstein, J. T. (2025). Probabilistic Record Linkage Using Pretrained Text Embeddings. Political Analysis, 1–12.
 
 
 ## Data
