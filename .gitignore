@@ -160,3 +160,12 @@ cython_debug/
 #.idea/
 
 data/
+
+# fuzzylink
+*.Rproj.user
+*.Rhistory
+*.Rdata
+*.httr-oauth
+*.DS_Store
+*.RData
+
