@@ -16,13 +16,13 @@ library(tidyverse)
 # fuzzylink
 model <- 'local'
 fmla <- match ~ sim + jw
-file_save_name <- "l2_fuzzylink_Apertus-8B-Instruct-2509"
+file_save_name <- "desired_input_filename"
 
-load(file = paste0('testing/Ornstein_application1/', file_save_name,'.RData'))
+load(file = paste0('fuzzylink/testing/Ornstein_application1/', file_save_name,'.RData'))
 
 # load hand-labeled pairs
-load('testing/Ornstein_application1/hand_labels.RData')
-load(file = paste0('testing/Ornstein_application1/recall.RData'))
+load('fuzzylink/testing/Ornstein_application1/hand_labels.RData')
+load(file = paste0('fuzzylink/testing/Ornstein_application1/recall.RData'))
 
 
 ## Precision and Recall ---------------------------
