@@ -50,8 +50,6 @@ blackfish run --grace-period 600 --gres 4 --mem 16 --ntasks-per-node 4 --time 00
 ```
 Again, you can set the API key and time as desired as long as the API key matches that of your embedding model. You will need to wait until this model’s status is HEALTHY before proceeding, which might take 5-10 minutes depending on your model of choice. While those models are loading, we can hop to the next step
 
-[^1]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector`, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzlink prompt might solve the issue. I’ve left the prompt as-is and stuck to models that returned properly formatted responses.
-
 
 ### Step 3: Running Fuzzylink
 In testing/Ornstein_application1/File 001_link-candidates.R, first, change the “file_save_name” variable to equal the name you wish to use for your output file. You can then modify the following call to fuzzylink:
@@ -77,3 +75,8 @@ In this function call, setting the models to `EMPTY` indicates that you are runn
 
 ### How well the models perform
 Below, we provide some basic metrics on performance for five potential models that you can use. Precision and Recall were calculated using Ornstein's L2 and California Election Data Archive (CEDA) files.
+
+Coming soon...
+
+
+[^1]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector`, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzlink prompt might solve the issue. I’ve left the prompt as-is and stuck to models that returned properly formatted responses.

@@ -1,0 +1,238 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# fuzzylink
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The R package `fuzzylink` implements a probabilistic record linkage procedure proposed in [Ornstein (2025)](https://doi.org/10.1017/pan.2025.10016). This method allows users to merge datasets with fuzzy matches on a key identifying variable. Suppose, for example, you have the following two datasets:
+
+```{r, echo = FALSE}
+library(tidyverse)
+# dfA <- tribble(~name, ~age,
+#                'Timothy B. Ryan', 28,
+#                'James J. Pointer', 40,
+#                'Jennifer C. Reilly', 32) |> 
+#   data.frame()
+# 
+# dfB <- tribble(~name, ~hobby,
+#                'Tim Ryan', 'Woodworking',
+#                'Jimmy Pointer', 'Guitar',
+#                'Jessica Pointer', 'Camping',
+#                'Tom Ryan', 'Making Pasta',
+#                'Jenny Romer', 'Salsa Dance',
+#                'Jeremy Creilly', 'Gardening',
+#                'Jennifer R. Riley', 'Acting') |> 
+#   data.frame()
+
+dfA <- tribble(~name, ~age,
+               'Joe Biden', 81,
+               'Donald Trump', 77,
+               'Barack Obama', 62,
+               'George W. Bush', 77,
+               'Bill Clinton', 77) |> 
+  as.data.frame()
+
+dfB <- tribble(~name, ~hobby,
+               'Joseph Robinette Biden', 'Football',
+               'Donald John Trump ', 'Golf',
+               'Barack Hussein Obama', 'Basketball',
+               'George Walker Bush', 'Reading',
+               'William Jefferson Clinton', 'Saxophone',
+               'George Herbert Walker Bush', 'Skydiving',
+               'Biff Tannen', 'Bullying',
+               'Joe Riley', 'Jogging') |> 
+  as.data.frame()
+```
+
+```{r}
+dfA
+dfB
+```
+
+We would like a procedure that correctly identifies which records in `dfB` are likely matches for each record in `dfA`. The `fuzzylink()` function performs this record linkage with a single line of code.
+
+```
+library(fuzzylink)
+df <- fuzzylink(dfA, dfB, by = 'name', record_type = 'person')
+df
+```
+
+```{r, echo=FALSE}
+library(fuzzylink)
+df <- fuzzylink(dfA, dfB, by = 'name', record_type = 'person', verbose = FALSE)
+df
+```
+
+The procedure works by using *pretrained text embeddings* to construct a measure of similarity for each pair of names. These similarity measures are then used as predictors in a statistical model to estimate the probability that two name pairs represent the same entity. See [Ornstein (2025)](https://doi.org/10.1017/pan.2025.10016) for technical details.
+
+## Installation
+
+You can install `fuzzylink` from CRAN with:
+
+```r
+install.packages('fuzzylink')
+```
+
+Or you can install the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("joeornstein/fuzzylink")
+```
+
+You will also need API access to a large language model (LLM). The `fuzzylink` package currently supports both OpenAI and Mistral LLMs, but will default to using OpenAI unless specified by the user.
+
+### OpenAI
+
+You will need to create a developer account with OpenAI, and create an API key through their developer platform. For best performance, I **strongly recommend** purchasing at least $5 in API credits, which will significantly increase your API rate limits.
+
+Once your account is created, copy-paste your API key into the following line of R code.
+
+```
+library(fuzzylink)
+
+openai_api_key('YOUR API KEY GOES HERE', install = TRUE)
+```
+
+### Mistral
+
+If you prefer to use language models from Mistral, you can sign up for an account [here](https://mistral.ai/). As of writing, Mistral requires you to purchase prepaid credits before you can access their language models through the API.
+
+Once you have a paid account, you can create an API key [here](https://console.mistral.ai/api-keys/), and copy-paste the API key into the following line of R code:
+
+```
+library(fuzzylink)
+
+mistral_api_key('YOUR API KEY GOES HERE', install = TRUE)
+```
+
+Now you're all set up!
+
+## Example
+
+Here is some code to reproduce the example above and make sure that everything is working on your computer.
+
+```{r, eval = FALSE}
+library(tidyverse)
+library(fuzzylink)
+
+dfA <- tribble(~name, ~age,
+               'Joe Biden', 81,
+               'Donald Trump', 77,
+               'Barack Obama', 62,
+               'George W. Bush', 77,
+               'Bill Clinton', 77)
+
+dfB <- tribble(~name, ~hobby,
+               'Joseph Robinette Biden', 'Football',
+               'Donald John Trump ', 'Golf',
+               'Barack Hussein Obama', 'Basketball',
+               'George Walker Bush', 'Reading',
+               'William Jefferson Clinton', 'Saxophone',
+               'George Herbert Walker Bush', 'Skydiving',
+               'Biff Tannen', 'Bullying',
+               'Joe Riley', 'Jogging')
+
+df <- fuzzylink(dfA, dfB, by = 'name', record_type = 'person')
+
+df
+```
+
+If the `df` object links all the presidents to their correct name in `dfB`, everything is running smoothly! (Note that you may see a warning from `glm.fit`. This is normal. The `stats` package gets suspicious whenever the model fit is *too* perfect.)
+
+### Arguments
+
+- The `by` argument specifies the name of the fuzzy matching variable that you want to use to link records. The dataframes `dfA` and `dfB` must both have a column with this name.
+
+- The `record_type` argument should be a singular noun describing the type of entity the `by` variable represents (e.g. "person", "organization", "interest group", "city"). It is used as part of a language model prompt when training the statistical model.
+
+- The `instructions` argument should be a string containing additional instructions to include in the language model prompt. Format these like you would format instructions to a human research assistant, including any relevant information that you think would help the model make accurate classifications.
+
+- The `model` argument specifies which language model to prompt. It defaults to OpenAI's 'gpt-4o', but for simpler problems, you can try 'gpt-3.5-turbo-instruct', which will significantly reduce cost and runtime. If you prefer an open-source language model, try 'open-mixtral-8x22b'.
+
+- The `embedding_model` argument specifies which pretrained text embeddings to use when modeling match probability. It defaults to OpenAI's 'text-embedding-3-large', but will also accept 'text-embedding-3-small' or Mistral's 'mistral-embed'. 
+
+- Several parameters---including `p`, `k`, `embedding_dimensions`, `max_validations`, and `parallel`---are for advanced users who wish to customize the behavior of the algorithm. See the package documentation for more details.
+
+- If there are any variables that must match *exactly* in order to link two records, you will want to include them in the `blocking.variables` argument. As a practical matter, I **strongly recommend** including blocking variables wherever possible, as they reduce the time and cost necessary to compute pairwise distance metrics. Suppose, for example, that our two illustrative datasets have a column called `state`, and we want to instruct `fuzzylink()` to only link people who live within the same state.
+
+```{r}
+dfA <- tribble(~name, ~state, ~age,
+               'Joe Biden', 'Delaware', 81,
+               'Donald Trump', 'New York', 77,
+               'Barack Obama', 'Illinois', 62,
+               'George W. Bush', 'Texas', 77,
+               'Bill Clinton', 'Arkansas', 77)
+
+dfB <- tribble(~name, ~state, ~hobby,
+               'Joseph Robinette Biden', 'Delaware', 'Football',
+               'Donald John Trump ', 'Florida', 'Golf',
+               'Barack Hussein Obama', 'Illinois', 'Basketball',
+               'George Walker Bush', 'Texas', 'Reading',
+               'William Jefferson Clinton', 'Arkansas', 'Saxophone',
+               'George Herbert Walker Bush', 'Texas', 'Skydiving',
+               'Biff Tannen', 'California', 'Bullying',
+               'Joe Riley', 'South Carolina', 'Jogging')
+```
+
+```{r, eval=FALSE}
+df <- fuzzylink(dfA, dfB, 
+                by = 'name',
+                blocking.variables = 'state',
+                record_type = 'person')
+df
+```
+
+```{r, echo=FALSE}
+df <- fuzzylink(dfA, dfB, 
+                by = 'name',
+                blocking.variables = 'state',
+                record_type = 'person',
+                verbose = FALSE)
+df
+```
+
+Note that because Donald Trump is listed under two different states---New York in `dfA` and Florida in `dfB`--the `fuzzylink()` function no longer returns a match for this record; all blocking variables must match exactly before the function will link two records together. You can specify as many blocking variables as needed by inputting their column names as a vector.
+
+The function returns a few additional columns along with the merged dataframe. The column `match_probability` reports the model's estimated probability that the pair of records refer to the same entity. This column should be used to aid in validation and can be used for computing weighted averages if a record in `dfA` is matched to multiple records in `dFB`. The columns `sim` and `jw` are string distance measures that the model uses to predict whether two records are a match. And if you included `blocking.variables` in the function call, there will be a column called `block` with an ID variable denoting which block the records belong to.
+
+## A Note On Cost
+
+Because the `fuzzylink()` function makes several calls to the OpenAI API---which charges a per-token fee---there is a monetary cost associated with each use. Based on the package defaults and API pricing as of August 2025, here is a table of approximate costs for merging datasets of various sizes.
+
+```{r, echo=FALSE}
+embedding_cost_per_token <- 0.13 / 1e6
+completion_cost_per_token <- 2.5 / 1e6
+tokens_per_string <- 4.5
+tokens_per_completion <- 30
+max_validations <- 1e4
+expand_grid(A = 10^(1:6),
+            B = 10^(1:6)) |> 
+  mutate(embedding_cost = (A+B) * tokens_per_string * embedding_cost_per_token,
+         completion_cost = if_else(A*5 < max_validations, A*5, max_validations) * tokens_per_completion * completion_cost_per_token) |> 
+  mutate(approx_cost = paste0('$', round(embedding_cost + completion_cost, 2)), 
+         A = scales::comma_format()(A),
+         B = scales::comma_format()(B)) |> 
+  select(`dfA` = A,
+         `dfB` = B,
+         `Approximate Cost (Default Settings)` = approx_cost) |>  
+  knitr::kable()
+```
+
+Note that cost scales more quickly with the size of `dfA` than with `dfB`, because it is more costly to complete LLM prompts for validation than it is to retrieve embeddings. With particularly large datasets, one can reduce costs by using GPT-3.5 (`model = 'gpt-3.5-turbo-instruct'`), blocking (`blocking.variables`), or reducing the maximum number of pairs labeled by the LLM (`max_labels`).
