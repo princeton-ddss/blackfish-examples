@@ -19,9 +19,10 @@ L2.RData
 
 ### Step 1: Setting up
 Let’s say you have two records: one is an L2 voter file with ~22 million registered voters from California and the second contains the names of over 9,000 candidates from public office (this is application 1 from Orstein’s paper). In order to merge the names of the candidates with their records from the L2 voter files, you’ll need the following:
-- The two .RData files containing the records that you wish to link
-- Blackfish installed and setup. For instructions on how to do this, visit [the blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/).
-Next, you’re going to need the fuzzylink code. Ornstein created an R package that can be installed from CRAN, but that package only works with Mistral and OpenAI models. For this example, I’ve modified Ornstein’s package to work with the vllm server used by Blackfish. The code is available on GitHub: https://github.com/Nina-mvH/Fuzzylink-for-Blackfish. Move your downloaded .RData files to the /testing/Ornstein_application1/ directory.
+- The two .RData files containing the records that you wish to link (`ceda.RData` and `L2.RData` for this example)
+- Blackfish installed and setup. For instructions on how to do this, visit [the blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/)
+
+Next, you’re going to need the fuzzylink code. Ornstein created an R package that can be installed from CRAN, but that package only works with Mistral and OpenAI models. For this example, I’ve modified Ornstein’s package to work with the vllm server used by Blackfish--clone this repository to use the updated version of fuzzylink. Move your downloaded .RData files to the /testing/Ornstein_application1/ directory.
 
 ### Step 2: Running the Services on Blackfish
 Once you have the data files and fuzzylink code, you can start running your blackfish services. The fuzzylink method requires two services: one used to generate embeddings and a second regular text generation model. In your terminal, start the blackfish API:
