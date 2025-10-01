@@ -7,13 +7,13 @@ Ornstein's fuzzylink algorithm can be broken into the following steps:
 3. Using a subset of the record pairs, label a training set with 1 if the records are a true match and 0 if they are not.
 4. Fit a probabilistic model to map the cosign similarities *(from the labeled subset??)* onto a match probability.
 5. Using the fitted model from step 4, estimate match probabiltiies for all record pairs in _A_ X _B_. Select _N<sub>L</sub>_ record pairs using uncertainty sampling and label them as in Step 3; add these to the training set and repeat steps 4-5 until some criterion is met. (Ornstein stopped when none of the estimated probabilities change by more than 0.01 between iterations.)
-6. Return all record pairs and their match probability 
+6. Return all record pairs and their match probability. 
 
 *CONFIRM ^^*
 
 If you need to merge two records using Ornstein's probabilistic record linkage procedure and want to do it easily, transparently, and for free, you can use Blackfish to run open source models on a HPC cluster. You will know exactly what models you are using and your results can be reproduced by anyone with access to the same model. The following tutorial will walk through all the steps you need to take to use Ornstein’s fuzzylink approach on your HPC cluster. 
 
-The motivation for this example and the original fuzzylink code are all attributed to Joseph Ornstein; Ornstein, J. T. (2025). Probabilistic Record Linkage Using Pretrained Text Embeddings. Political Analysis, 1–12.
+_The motivation for this example and the original fuzzylink code are all attributed to Joseph Ornstein; Ornstein, J. T. (2025). Probabilistic Record Linkage Using Pretrained Text Embeddings. Political Analysis, 1–12._
 
 
 ## Data
@@ -29,10 +29,10 @@ L2.RData
 
 ### Step 1: Setting up
 Let’s say you have two records: one is an L2 voter file with ~22 million registered voters from California and the second contains the names of over 9,000 candidates from public office (this is application 1 from Orstein’s paper). In order to merge the names of the candidates with their records from the L2 voter files, you’ll need the following:
-- The two .RData files containing the records that you wish to link placed in the /testing/Ornstein_application1/ directory (`ceda.RData` and `L2.RData` for this example)
+- The two .RData files containing the records that you wish to link placed in the fuzzylink/testing/Ornstein_application1/ directory (`ceda.RData` and `L2.RData` for this example)
 - Blackfish installed and setup. For instructions on how to do this, visit [the blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/)
 
-Next, you’re going to need the fuzzylink code. Ornstein created an R package that can be installed from CRAN, but that package only works with Mistral and OpenAI models. For this example, I’ve modified Ornstein’s package to work with the vllm server used by Blackfish--clone this repository to use the updated version of fuzzylink. Move your downloaded .RData files to the /testing/Ornstein_application1/ directory.
+Next, you’re going to need the fuzzylink code. Ornstein created an R package that can be installed from CRAN, but that package only works with Mistral and OpenAI models. For this example, I’ve modified Ornstein’s package to work with the vllm server used by Blackfish--clone this repository to use the updated version of fuzzylink. Move your downloaded .RData files to the fuzzylink/testing/Ornstein_application1/ directory.
 
 ### Step 2: Running the Services on Blackfish
 Once you have the data files and fuzzylink code, you can start running your blackfish services. The fuzzylink method requires two services: one used to generate embeddings and a second regular text generation model. In your terminal (in your cloned blackfish directory), start the blackfish API:
@@ -63,7 +63,7 @@ Again, you can set the API key and time as desired, as long as the API key match
 
 
 ### Step 3: Running Fuzzylink
-In testing/Ornstein_application1/File 001_link-candidates.R, first, change the “file_save_name” variable to equal the name you wish to use for your output file. You can then modify the following call to fuzzylink:
+In fuzzylink/testing/Ornstein_application1/File 001_link-candidates.R, first, change the “file_save_name” variable to equal the name you wish to use for your output file. You can then modify the following call to fuzzylink:
 ```R
 df <- BLfuzzylink::fuzzylink(
  dfA = ceda,
