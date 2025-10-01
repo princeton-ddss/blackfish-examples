@@ -6,7 +6,7 @@ Ornstein's fuzzylink algorithm can be broken into the following steps:
 2. Compute the cosign similarity between the embedding vectors for each pair of recors in the set _A_ x _B_.
 3. Using a subset of the record pairs, label a training set with 1 if the records are a true match and 0 if they are not.
 4. Fit a probabilistic model to map the cosign similarities *(from the labeled subset??)* onto a match probability.
-5. Using the fitted model from step 4, estimate match probabiltiies for all record pairs in _A_ X _B_. Select _N~L~_ record pairs using uncertainty sampling and label them as in Step 3; add these to the training set and repeat steps 4-5 until some criterion is met. (Ornstein stopped when none of the estimated probabilities change by more than 0.01 between iterations.)
+5. Using the fitted model from step 4, estimate match probabiltiies for all record pairs in _A_ X _B_. Select _N<sub>L</sub>_ record pairs using uncertainty sampling and label them as in Step 3; add these to the training set and repeat steps 4-5 until some criterion is met. (Ornstein stopped when none of the estimated probabilities change by more than 0.01 between iterations.)
 6. Return all record pairs and their match probability 
 
 *CONFIRM ^^*
