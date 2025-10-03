@@ -50,7 +50,7 @@ bash start_services.sh
 This will prompt you for an api_key and start the services for you. You can modify this file directly to automatically start your services or you can start them manually, as described below.
 
 
-To start the embedding service, type the following command, changing the api key and/or time if desired:
+To start the embedding service, type the following command, changing the api key and/or time[^1] if desired:
 ```shell
 blackfish run --gres 1 --mem 16 --ntasks-per-node 4 --time 00:30:00 --constraint 'amd&gpu40' text-generation TinyLlama/TinyLlama-1.1B-Chat-v1.0 --api-key sealsaretasty --task embed
 ```
@@ -58,7 +58,7 @@ You can check the status and port number of this service by typing:
 ```shell
 blackfish ls
 ```
-The service status should change from "PENDING" to “STARTING” shortly, but will take a few minutes to change to “HEALTHY.” While waiting, you can start the second service. For the text generation model, you can pick which model you want to use, though models that are not powerful enough might cause the fuzzylink code to fail if they do not respond to queries with a strictly ‘Yes’ or ‘No’ response[^1]. To see which models you have available on Blackfish type:
+The service status should change from "PENDING" to “STARTING” shortly, but will take a few minutes to change to “HEALTHY.” While waiting, you can start the second service. For the text generation model, you can pick which model you want to use, though models that are not powerful enough might cause the fuzzylink code to fail if they do not respond to queries with a strictly ‘Yes’ or ‘No’ response[^2]. To see which models you have available on Blackfish type:
 ```shell
 blackfish model ls
 ```
@@ -96,5 +96,5 @@ Below, we provide some basic metrics on performance for five potential models th
 
 Coming soon...
 
-
-[^1]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector`, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzlink prompt might solve the issue. I’ve left the prompt as-is and stuck to models that returned properly formatted responses.
+[^1]: You can also change which model you use for your embeddings if you don't want to use the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model. A list of models which are compatible with the --task embed argument is COMING SOON.
+[^2]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector`, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzlink prompt might solve the issue. I’ve left the prompt as-is and stuck to models that returned properly formatted responses.
