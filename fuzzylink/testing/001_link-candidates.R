@@ -9,22 +9,15 @@ rm(list = ls())
 
 library(tidyverse)
 library(glue)
-source("fuzzylink/R/fuzzylink.R")
-source("fuzzylink/R/get_embeddings.R")
-source("fuzzylink/R/get_similarity_matrix.R")
-source("fuzzylink/R/check_match.R")
-source("fuzzylink/R/dot.R")
-source("fuzzylink/R/get_training_set.R")
-source("fuzzylink/R/hand_label.R")
-source("fuzzylink/R/utils.R")
 
 
 file_save_name <- "desired_output_filename"
+rdata_pathway <- "pathway/to/downloaded/RData/files/"
 
 ## Load and clean raw datasets -----------------
 
-load('fuzzylink/testing/Ornstein_application1/ceda.RData') # CEDA
-load('fuzzylink/testing/Ornstein_application1/L2.RData') # selected L2 data from Alameda, Kern, and Ventura counties
+load(paste0(rdata_pathway, "ceda.RData")) # CEDA
+load(paste0(rdata_pathway, "L2.RData")) # selected L2 data from Alameda, Kern, and Ventura counties
 
 # for this application, just keep Alameda, Kern, and Ventura county candidates since 2016
 ceda <- ceda |>
@@ -83,7 +76,7 @@ l2 <- l2 |>
 fmla <- match ~ sim + jw
 learner <- 'glm'
 
-df <- fuzzylink(
+df <- BLfuzzylink::fuzzylink(
   dfA = ceda,
   dfB = l2,
   by = 'fullname',
@@ -100,5 +93,5 @@ df <- fuzzylink(
   embedding_dimensions = 2048
 )
 
-save(df, file = paste0('fuzzylink/testing/Ornstein_application1/', file_save_name,'.RData'))
+save(df, file = paste0(rdata_pathway, file_save_name,'.RData'))
 
