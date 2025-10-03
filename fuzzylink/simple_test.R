@@ -17,7 +17,7 @@ dfB <- tribble(~name, ~state, ~hobby,
                'Biff Tannen', 'California', 'Bullying',
                'Joe Riley', 'South Carolina', 'Jogging')
 
-df <- BLfuzzylink::fuzzylink(dfA, dfB, by = 'name', 
+df <- BFfuzzylink::fuzzylink(dfA, dfB, by = 'name', 
                              model = "EMPTY", 
                              embedding_model = "EMPTY",
                              record_type = 'person',
