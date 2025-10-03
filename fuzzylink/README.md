@@ -3,10 +3,10 @@ In his paper “Probabilistic Record Linkage Using Pretrained Text Embeddings,�
 
 Ornstein's fuzzylink algorithm can be broken into the following steps:
 1. Use a model to retrieve text embeddings for the string variables in record _A_ and _B_.
-2. Compute the cosign similarity between the embedding vectors for each pair of recors in the set _A_ x _B_.
+2. Compute the cosine similarity between the embedding vectors for each pair of records in the set _A_ x _B_.
 3. Using a subset of the record pairs, label a training set with 1 if the records are a true match and 0 if they are not.
 4. Fit a probabilistic model to map the cosign similarities *(from the labeled subset??)* onto a match probability.
-5. Using the fitted model from step 4, estimate match probabiltiies for all record pairs in _A_ X _B_. Select _N<sub>L</sub>_ record pairs using uncertainty sampling and label them as in Step 3; add these to the training set and repeat steps 4-5 until some criterion is met. (Ornstein stopped when none of the estimated probabilities change by more than 0.01 between iterations.)
+5. Using the fitted model from step 4, estimate match probabilities for all record pairs in _A_ X _B_. Select _N<sub>L</sub>_ record pairs using uncertainty sampling and label them as in Step 3; add these to the training set and repeat steps 4-5 until some criterion is met. (Ornstein stopped when none of the estimated probabilities changed by more than 0.01 between iterations.)
 6. Return all record pairs and their match probability. 
 
 *CONFIRM ^^*
@@ -30,7 +30,7 @@ L2.RData
 ### Step 1: Setting up
 Let’s say you have two records: one is an L2 voter file with ~22 million registered voters from California and the second contains the names of over 9,000 candidates from public office (this is application 1 from Orstein’s paper). In order to merge the names of the candidates with their records from the L2 voter files, you’ll need the following:
 - The two .RData files containing the records that you wish to link placed in your working directory (`ceda.RData` and `L2.RData` for this example)
-- Blackfish installed and setup. For instructions on how to do this, visit [the blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/)
+- Blackfish installed and set up. For instructions on how to do this, visit [the blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/)
 
 Next, you’re going to need the fuzzylink code. Ornstein created an R package that can be installed from CRAN, but that package only works with Mistral and OpenAI models. For this example, I’ve modified Ornstein’s package to work with the vllm server used by Blackfish--[clone this repository](https://github.com/princeton-ddss/fuzzylink-for-blackfish) to use the updated version of fuzzylink.
 
@@ -47,7 +47,7 @@ This will allow you to run blackfish commands directly and easily. If you don't 
 ```shell
 bash start_services.sh
 ```
-This will prompt you for an api_key and start the services for you. You can modify this file directy to use it to automatically start your services or you can start them manually, as desribed below.
+This will prompt you for an api_key and start the services for you. You can modify this file directly to automatically start your services or you can start them manually, as described below.
 
 
 To start the embedding service, type the following command, changing the api key and/or time if desired:
