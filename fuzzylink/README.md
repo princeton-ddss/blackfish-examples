@@ -29,10 +29,10 @@ L2.RData
 
 ### Step 1: Setting up
 Let’s say you have two records: one is an L2 voter file with ~22 million registered voters from California and the second contains the names of over 9,000 candidates from public office (this is application 1 from Orstein’s paper). In order to merge the names of the candidates with their records from the L2 voter files, you’ll need the following:
-- The two .RData files containing the records that you wish to link placed in the fuzzylink/testing/Ornstein_application1/ directory (`ceda.RData` and `L2.RData` for this example)
+- The two .RData files containing the records that you wish to link placed in your working directory (`ceda.RData` and `L2.RData` for this example)
 - Blackfish installed and setup. For instructions on how to do this, visit [the blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/)
 
-Next, you’re going to need the fuzzylink code. Ornstein created an R package that can be installed from CRAN, but that package only works with Mistral and OpenAI models. For this example, I’ve modified Ornstein’s package to work with the vllm server used by Blackfish--[clone this repository](https://github.com/princeton-ddss/fuzzylink-for-blackfish) to use the updated version of fuzzylink. ~~Move your downloaded .RData files to the fuzzylink/testing/Ornstein_application1/ directory.~~
+Next, you’re going to need the fuzzylink code. Ornstein created an R package that can be installed from CRAN, but that package only works with Mistral and OpenAI models. For this example, I’ve modified Ornstein’s package to work with the vllm server used by Blackfish--[clone this repository](https://github.com/princeton-ddss/fuzzylink-for-blackfish) to use the updated version of fuzzylink.
 
 ### Step 2: Running the Services on Blackfish
 Once you have the data files and fuzzylink code, you can start running your blackfish services. The fuzzylink method requires two services: one used to generate embeddings and a second regular text generation model. In your terminal (in your cloned blackfish directory), start the blackfish API:
@@ -43,7 +43,14 @@ Next, in a new terminal (again, in your blackfish directory), activate the black
 ```shell
 source .venv/bin/activate
 ```
-This will allow you to run blackfish commands directly and easily. To start the embedding service, type the following command, changing the api key and/or time if desired:
+This will allow you to run blackfish commands directly and easily. If you don't care too much about the specifics of the models you are running, you can automatically start the two default services described below using the `start_services.sh` file by typing:
+```shell
+bash start_services.sh
+```
+This will prompt you for an api_key and start the services for you. You can modify this file directy to use it to automatically start your services or you can start them manually, as desribed below.
+
+
+To start the embedding service, type the following command, changing the api key and/or time if desired:
 ```shell
 blackfish run --gres 1 --mem 16 --ntasks-per-node 4 --time 00:30:00 --constraint 'amd&gpu40' text-generation TinyLlama/TinyLlama-1.1B-Chat-v1.0 --api-key sealsaretasty --task embed
 ```
@@ -63,9 +70,9 @@ Again, you can set the API key and time as desired, as long as the API key match
 
 
 ### Step 3: Running Fuzzylink
-In File 001_link-candidates.R, first, change the “file_save_name” variable to equal the name you wish to use for your output file. Similarly, modify "rdata_pathway" to be the pathway to the directory which contains your downloaded .RData files (this will also be where the fuzzylink output gets saved). You can then modify the following call to fuzzylink:
+In File 001_link-candidates.R, first, change the “file_save_name” variable to equal the name you wish to use for your output file. Similarly, modify "rdata_pathway" to be the pathway to your working directory which contains your downloaded .RData files (this will also be where the fuzzylink output gets saved). You can then modify the following call to fuzzylink:
 ```R
-df <- BLfuzzylink::fuzzylink(
+df <- BFfuzzylink::fuzzylink(
  dfA = ceda,
  dfB = l2,
  by = 'fullname',
@@ -82,7 +89,7 @@ df <- BLfuzzylink::fuzzylink(
  embedding_dimensions = 2048
 )
 ```
-In this function call, setting the models to `EMPTY` indicates that you are running the model locally. The `open_api_key` should match what you set as your `--api-key` when initiating the services (or can be left empty if you did not set one). `Embedding_port_num` should be the port number the embedding service is running on, and `text_gen_port_num` should be the second service’s port number; both port numbers can be seen after running `blackfish ls`. Once the port numbers, api key, and file save name have been updated, you are ready to go! Wait until the status of both your services is HEALTHY, then start an R session. Make sure your working directory is set to the directory with the fuzzylink package, type `devtool::load_all()`, then simply run the 001_link-candidates file! It should take a few minutes to run and will save the results to an .RData file with the name you specified in the file_save_name variable. 
+In this function call, setting the models to `EMPTY` indicates that you are running the model locally. The `open_api_key` should match what you set as your `--api-key` when initiating the services (or can be left empty if you did not set one). `Embedding_port_num` should be the port number the embedding service is running on, and `text_gen_port_num` should be the second service’s port number; both port numbers can be seen after running `blackfish ls`. Once the port numbers, api key, and file save name have been updated, you are ready to go! Wait until the status of both your services is HEALTHY, then start an R session. Make sure your session's working directory is set to the directory containing the fuzzylink package, type `devtool::load_all()`, then simply run the 001_link-candidates file! It should take a few minutes to run and will save the results to an .RData file with the name you specified in the file_save_name variable. 
 
 ### How well the models perform
 Below, we provide some basic metrics on performance for five potential models that you can use. Precision and Recall were calculated using Ornstein's L2 and California Election Data Archive (CEDA) files.
