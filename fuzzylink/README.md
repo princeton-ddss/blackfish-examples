@@ -47,7 +47,7 @@ This will allow you to run blackfish commands directly and easily. If you don't 
 ```shell
 bash start_services.sh
 ```
-This will prompt you for an api_key and start the services for you. You can modify this file directly to automatically start your services or you can start them manually, as described below.
+This will prompt you for an api key (which you can leave blank if desired) and start the services for you. You can modify this file directly to automatically start your services or you can start them manually, as described below.
 
 
 To start the embedding service, type the following command, changing the api key and/or time[^1] if desired:
@@ -62,7 +62,7 @@ The service status should change from "PENDING" to “STARTING” shortly, but w
 ```shell
 blackfish model ls
 ```
-You are going to want to pick a model that is a “text-generation” model. You can also [download your own model](https://princeton-ddss.github.io/blackfish/latest/#step-4-obtain-a-model) if you want one that is not available. For this example, we will use the meta-llama/Llama-3.3-70B-Instruct model--to start this service, type the following in the CLI:
+You are going to want to pick a model that is a “text-generation” model. You can also [download your own model](https://princeton-ddss.github.io/blackfish/latest/#step-4-obtain-a-model) if you want one that is not available. For this example, we will use the `meta-llama/Llama-3.3-70B-Instruct` model--to start this service, type the following in the CLI:
 ```shell
 blackfish run --grace-period 600 --gres 4 --mem 16 --ntasks-per-node 4 --time 00:30:00  --constraint gpu80 text-generation meta-llama/Llama-3.3-70B-Instruct --api-key sealsaretasty --revision 6f6073b423013f6a7d4d9f39144961bfbfbc386b
 ```
@@ -70,7 +70,10 @@ Again, you can set the API key and time as desired, as long as the API key match
 
 
 ### Step 3: Running Fuzzylink
-In File 001_link-candidates.R, first, change the “file_save_name” variable to equal the name you wish to use for your output file. Similarly, modify "rdata_pathway" to be the pathway to your working directory which contains your downloaded .RData files (this will also be where the fuzzylink output gets saved). You can then modify the following call to fuzzylink:
+If you want to quickly test that your services are working properly, you can follow the following steps to update/run the `simple_test.R` file.
+
+
+In `001_link-candidates.R`, first, change the `file_save_name` variable to equal the name you wish to use for your output file. Similarly, modify "rdata_pathway" to be the pathway to your working directory which contains your downloaded .RData files (this will also be where the fuzzylink output gets saved). You can then modify the following call to fuzzylink[^3]:
 ```R
 df <- BFfuzzylink::fuzzylink(
  dfA = ceda,
@@ -86,10 +89,10 @@ df <- BFfuzzylink::fuzzylink(
  embedding_model = "EMPTY",
  embedding_port_num = 8080,
  text_gen_port_num = 8081,
- embedding_dimensions = 2048
+ embedding_dimensions = 2048 
 )
 ```
-In this function call, setting the models to `EMPTY` indicates that you are running the model locally. The `open_api_key` should match what you set as your `--api-key` when initiating the services (or can be removed/left empty[^3] if you did not set one). `Embedding_port_num` should be the port number the embedding service is running on, and `text_gen_port_num` should be the second service’s port number; both port numbers can be seen after running `blackfish ls`. Once the port numbers, api key, and file save name have been updated, you are ready to go! Wait until the status of both your services is HEALTHY, then start an R session. Make sure your session's working directory is set to the directory containing the fuzzylink package, type `devtool::load_all()`, then simply run the 001_link-candidates file! It should take a few minutes to run and will save the results to an .RData file with the name you specified in the file_save_name variable. 
+In this function call, setting the models to `EMPTY` indicates that you are running the model locally. The `open_api_key` should match what you set as your `--api-key` when initiating the services (or can be removed/left empty[^4] if you did not set one). `Embedding_port_num` should be the port number the embedding service is running on, and `text_gen_port_num` should be the second service’s port number; both port numbers can be seen after running `blackfish ls`. Once the port numbers, api key, and file save name have been updated, you are ready to go! Wait until the status of both your services is HEALTHY, then start an R session. Make sure your session's working directory is set to the directory containing the fuzzylink package, type `devtool::load_all()`, then simply run the 001_link-candidates file! It should take a few minutes to run and will save the results to an .RData file with the name you specified in the `file_save_name` variable. 
 
 ### How well the models perform
 Below, we provide some basic metrics on performance for five potential models that you can use. Precision and Recall were calculated using Ornstein's L2 and California Election Data Archive (CEDA) files.
@@ -98,4 +101,5 @@ Coming soon...
 
 [^1]: You can also change which model you use for your embeddings if you don't want to use the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model. A list of models which are compatible with the --task embed argument is COMING SOON.
 [^2]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector`, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzlink prompt might solve the issue. I’ve left the prompt as-is and stuck to models that returned properly formatted responses.
-[^3]: If you leave the api key parameter empty, the fuzzylink code will, by default, try to get an OpenAI api key from your system's environment. If you don't have one, this will cause no problems and the local model will be able to run without an api key specified. However, if you did not set an --api-key when starting your services AND you have an OpenAI api key findable in your system's environment, you will likely encounter an error and will need to define an --api-key to use for your local models.
+[^3]: In this fuzzylink call, `embedding_dimensions` is set to 2048; this is the length of the embedding vector which the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model creates. If you decide to use a different model, you may want to edit this number to have it match that model's specific embedding dimensions (??). A list of models with their embedding dimensions is COMING SOON.
+[^4]: If you leave the api key parameter empty, the fuzzylink code will, by default, try to get an OpenAI api key from your system's environment. If you don't have one, this will cause no problems and the local model will be able to run without an api key specified. However, if you did not set an `--api-key` when starting your services AND you have an OpenAI api key findable in your system's environment, you will likely encounter an error and will need to define an `--api-key` to use for your local models.
