@@ -12,3 +12,26 @@ To run this example:
 **Note** - This example assumes that Blackfish is running on a remote cluster.
 Also, there is an option to use a `data:` file format for the images. However, this
 requires manually converting each image to PIL data. 
+
+---
+
+## Experimental Results
+
+We conducted a series of experiments using multiple models to evaluate classification performance on the animal dataset. To evaluate the output, run the script `python evaluate.py`.
+
+### Models Tested 
+
+* google/gemma-3-4b-it
+* google/gemma-3-12b-it
+* google/gemma-3-27b-it
+* meta-llama/Llama-3.2-11B-Vision-Instruct
+* meta-llama/Llama-4-Scout-17B-16E-Instruct
+* meta-llama/Llama-3.2-90B-Vision-Instruct
+
+### Summary of Preliminary Results
+
+| Model             | Accuracy (%) | Avg. Inference Time (s/img) |
+| ----------------- | ------------ | --------------------------- | 
+| google/gemma-3-4b-it       | 87.2         | ?                         |
+| google/gemma-3-12b-it            | 89.5         | ?                        |
+| google/gemma-3-27b-it             | 92.3         | ?                         |

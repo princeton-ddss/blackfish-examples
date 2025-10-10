@@ -16,6 +16,7 @@ case $MODEL in
             --mem 16 \
             --ntasks-per-node 4 \
             --time 00:30:00 \
+            --profile $PROFILE \
             text-generation meta-llama/Llama-3.2-11B-Vision-Instruct \
             --allowed-local-media-path "$REMOTE_DATA_DIR"
         ;;
@@ -25,6 +26,7 @@ case $MODEL in
             --mem 16 \
             --ntasks-per-node 4 \
             --time 00:30:00 \
+            --profile $PROFILE \
             text-generation google/gemma-3-4b-it \
             --allowed-local-media-path "$REMOTE_DATA_DIR"
         ;;
