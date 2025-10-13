@@ -106,6 +106,37 @@ When using TinyLlama/TinyLlama-1.1B-Chat-v1.0 for embeddings and meta-llama/Llam
 
 Coming soon...how to calculate precision/recall for your model combo
 
+
+
+
+| Model    | Embedding Dimension |
+| -------- | ------- |
+| deepseek-ai/DeepSeek-R1-Distill-Llama-70B  | 8192    |
+| deepseek-ai/DeepSeek-R1-Distill-Qwen-32B  | 5120    |
+| deepseek-ai/DeepSeek-V2-Lite | 2048 |
+| deepseek-ai/DeepSeek-V2-Lite-Chat | 2048 |
+| google/gemma-3-1b-it | 1152 |
+| meta-llama/Llama-3.1-70B-Instruct | 8192 |
+| meta-llama/Llama-3.1-8B-Instruct | 4096 |
+| meta-llama/Llama-3.2-1B-Instruct | 2048 |
+| meta-llama/Llama-3.2-3B-Instruct | 3072 |
+| meta-llama/Llama-3.3-70B-Instruct | 8192 |
+| meta-llama/Meta-Llama-3-70B-Instruct | 8192 |
+| meta-llama/Meta-Llama-3-8B-Instruct | 4096|
+| mistralai/Mistral-7B-Instruct-v0.3 | 4096 |
+| mistralai/Mixtral-8x7B-Instruct-v0.1 | 4096 | 
+| Qwen/Qwen2-Audio-7B-Instruct | 4096 | 
+| Qwen/Qwen2.5-32B | 5120 | 
+| Qwen/Qwen2.5-32B-Instruct | 5120 | 
+| Qwen/Qwen2.5-72B | 8192 | 
+| Qwen/Qwen2.5-72B-Instruct | 8192 | 
+| Qwen/Qwen3-14B | 5120 | 
+| Qwen/Qwen3-32B | 5120 | 
+| Qwen/Qwen3-8B | 4096 | 
+| Qwen/QwQ-32B | 5120 | 
+| TinyLlama/TinyLlama-1.1B-Chat-v1.0 | 2048 |
+
+
 [^1]: You can also change which model you use for your embeddings if you don't want to use the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model. A list of models which are compatible with the --task embed argument is COMING SOON.
 [^2]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector`, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzlink prompt might solve the issue. I’ve left the prompt as-is and stuck to models that returned properly formatted responses.
 [^3]: In this fuzzylink call, `embedding_dimensions` is set to 2048; this is the length of the embedding vector which the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model creates. If you decide to use a different model, you may want to edit this number to have it match that model's specific embedding dimensions (??). A list of models with their embedding dimensions is COMING SOON.
