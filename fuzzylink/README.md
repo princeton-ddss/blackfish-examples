@@ -100,7 +100,7 @@ In this function call, setting the models to `EMPTY` indicates that you are runn
 ### How well the models perform
 Below, we provide some basic metrics on performance for five potential text generation models that you can use for this process. Precision and Recall were calculated by comparing the output of fuzzylink on Ornstein's L2 and California Election Data Archive (CEDA) files with his recall and hand_labels files. Make sure you have these files downloaded if you want to measure your models' performance on this linkage process.
 
-It is important to note that, due to the nature of the recall file provided, some false negatives may be missing in the recall calculation. 
+*It is important to note that, due to the nature of the recall file provided, some false negatives may be missing in the recall calculation.*
 
 In `006_link-candidates.R`, update `file_save_name` to be the name of the file containing the results from running the fuzzylink code (this should match the `file_save_name` from `001_link-candidates.R`). Similarly, update `rdata_pathway` to be the full pathway to where the .RData files are being stored. Now, you can simply run this file. The precisions and recalls for various text generation models are reported below--the same embedding model was used for all. Precision is a measure of the fraction of identified matches are correct ($\\frac{true  positives}{true  positives + false  positives}$) while recall measures the fraction of matches which were identified ($\\frac{true  positives}{true  positives + false  negatives}$).
 
