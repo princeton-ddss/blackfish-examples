@@ -96,9 +96,14 @@ df <- BFfuzzylink::fuzzylink(
 In this function call, setting the models to `EMPTY` indicates that you are running the model locally. The `open_api_key` should match what you set as your `--api-key` when initiating the services (or can be removed/left empty[^4] if you did not set one). `Embedding_port_num` should be the port number the embedding service is running on, and `text_gen_port_num` should be the second service’s port number; both port numbers can be seen after running `blackfish ls`. Once the port numbers, api key, and file save name have been updated, you are ready to go! Wait until the status of both your services is HEALTHY, then start an R session. Make sure your session's working directory is set to the directory containing the fuzzylink package, type `devtool::load_all()`, then simply run the 001_link-candidates file! It should take a few minutes to run and will save the results to an .RData file with the name you specified in the `file_save_name` variable. 
 
 ### How well the models perform
-Below, we provide some basic metrics on performance for five potential models that you can use. Precision and Recall were calculated using fuzzylink on Ornstein's L2 and California Election Data Archive (CEDA) files as well as his recall and hand_labels files. Some notes on these calculations before we begin:
-- Ornstein and his research team created the hand_labels and recall files based on the performance of their fuzzylink. The hand_labels file goes through all the matches their fuzzylink identified and confirms/denies them as matches. Similarly, the recall file goes through the names in the CEDA file that were not matched by fuzzylink and identifies if there was a match in the L2 file or not. Combined, the hand_labels and recall files account for 706 unique names from the CEDA file; there are a total of 1,019 entries in the cleaned CEDA file.
+Below, we provide some basic metrics on performance for five potential models that you can use. Precision and Recall were calculated using fuzzylink on Ornstein's L2 and California Election Data Archive (CEDA) files as well as his recall and hand_labels files. Make sure you have these files downloaded if you want to measure your models' performance. ~~Some notes on these calculations before we begin:~~
+- ~~Ornstein and his research team created the hand_labels and recall files based on the performance of their fuzzylink. The hand_labels file goes through all the matches their fuzzylink identified and confirms/denies them as matches. Similarly, the recall file goes through the names in the CEDA file that were not matched by fuzzylink and identifies if there was a match in the L2 file or not. Combined, the hand_labels and recall files account for 706 unique names from the CEDA file; there are a total of 1,019 entries in the cleaned CEDA file.~~
 - any other important points
+
+In `006_link-candidates.R`, 
+
+
+
 
 When using TinyLlama/TinyLlama-1.1B-Chat-v1.0 for embeddings and meta-llama/Llama-3.3-70B-Instruct for the Y/N responses, precision was approximately 99.6% and recall was 93.8%.
 
