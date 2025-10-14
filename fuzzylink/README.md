@@ -100,16 +100,16 @@ Below, we provide some basic metrics on performance for five potential models th
 - ~~Ornstein and his research team created the hand_labels and recall files based on the performance of their fuzzylink. The hand_labels file goes through all the matches their fuzzylink identified and confirms/denies them as matches. Similarly, the recall file goes through the names in the CEDA file that were not matched by fuzzylink and identifies if there was a match in the L2 file or not. Combined, the hand_labels and recall files account for 706 unique names from the CEDA file; there are a total of 1,019 entries in the cleaned CEDA file.~~
 - any other important points
 
-In `006_link-candidates.R`, 
+In `006_link-candidates.R`, update `file_save_name` to be the name of the file containing the results from running the fuzzylink code (this should match the `file_save_name` from `001_link-candidates.R`). Similarly, update `rdata_pathway` to be the full pathway to where the .RData files are being stored. Now, you can simply run this file. The precisions and recalls for various text generation models are reported below--the same embedding model was used for all. Precision is a measure of the fraction of identified matches are correct ($\\frac{true  positives}{true  positives + false  positives}$) while recall measures the fraction of matches which were identified ($\\frac{true  positives}{true  positives + false  negatives}$).
 
+| Text Generation Model | Precision | Recall |
+| ------ | ------- | ------|
+| meta-llama/Llama-3.1-70B-Instruct | 0.9938272 | 0.9378641 |
+| meta-llama/Llama-3.3-70B-Instruct | 0.99591 | 0.938343 |
+| Google/gemma-3-27b-it | 0.9898374 | 0.938343 |
+| swiss-ai/Apertus-8B-Instruct-2509 | 0.9952038 | 0.9284116 |
+| Mistralai/Mixtral-8x7B-Instruct-v0.1 | 1.000000 | 0.895082 |
 
-
-
-When using TinyLlama/TinyLlama-1.1B-Chat-v1.0 for embeddings and meta-llama/Llama-3.3-70B-Instruct for the Y/N responses, precision was approximately 99.6% and recall was 93.8%.
-
-*I would also like to put a table of the different models I tried and their performances once I have them confirmed*
-
-Coming soon...how to calculate precision/recall for your model combo
 
 
 
@@ -142,7 +142,7 @@ Coming soon...how to calculate precision/recall for your model combo
 | TinyLlama/TinyLlama-1.1B-Chat-v1.0 | 2048 |
 
 
-[^1]: You can also change which model you use for your embeddings if you don't want to use the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model. A list of models which are compatible with the --task embed argument is COMING SOON.
+[^1]: You can also change which model you use for your embeddings if you don't want to use the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model. A list of models which are compatible with the --task embed argument is COMING SOON. Alternatively, you can use an embedding model COMING SOON
 [^2]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector`, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzlink prompt might solve the issue. I’ve left the prompt as-is and stuck to models that returned properly formatted responses.
 [^3]: In this fuzzylink call, `embedding_dimensions` is set to 2048; this is the length of the embedding vector which the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model creates. If you decide to use a different model, you may want to edit this number to have it match that model's specific embedding dimensions (??). A list of models with their embedding dimensions is COMING SOON.
 [^4]: If you leave the api key parameter empty, the fuzzylink code will, by default, try to get an OpenAI api key from your system's environment. If you don't have one, this will cause no problems and the local model will be able to run without an api key specified. However, if you did not set an `--api-key` when starting your services AND you have an OpenAI api key findable in your system's environment, you will likely encounter an error and will need to define an `--api-key` to use for your local models.
