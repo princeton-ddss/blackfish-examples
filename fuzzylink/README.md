@@ -110,7 +110,7 @@ In `006_link-candidates.R`, update `file_save_name` to be the name of the file c
 | swiss-ai/Apertus-8B-Instruct-2509 | 0.9952038 | 0.9284116 |
 | Mistralai/Mixtral-8x7B-Instruct-v0.1 | 1.000000 | 0.895082 |
 
-
+In his paper, Ornstein used OpenAI for getting the embeddings and the Y/N responses. In his discussion he claimed, "Because these models are closed-source and operated by for-profit entities...the results that fuzzylink produces—including those presented in this article—are not fully reproducible." He states that, while open source models would solve this problem, the accuracy provided by OpenAI's state-of-the-art closed source model is worth the cost and inability to reproduce his results. However, the precision and recall that we report here are not too far off of Ornstien's; Orsntein's estimated precision and recall were both 95.8%. While the OpenAI models might have a higher recall, our open source models all have higher precisions...
 
 
 
