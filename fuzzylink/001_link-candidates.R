@@ -76,7 +76,7 @@ l2 <- l2 |>
 fmla <- match ~ sim + jw
 learner <- 'glm'
 
-df <- BLfuzzylink::fuzzylink(
+df <- BFfuzzylink::fuzzylink(
   dfA = ceda,
   dfB = l2,
   by = 'fullname',

@@ -17,8 +17,8 @@ library(tidyverse)
 model <- 'local'
 fmla <- match ~ sim + jw
 
-file_save_name <- "l2_fuzzylink_Llama-3_3-70B-Instruct"
-rdata_pathway <- "pathway/to/downloaded/RData/files/"
+file_save_name <- "l2_fuzzylink_Mixtral-8x7B-Instruct-v0_1"
+rdata_pathway <- "/Users/nv5842/github/fuzzylink/testing/Ornstein_application1/"
 
 load(file = paste0(rdata_pathway, file_save_name,'.RData'))
 
