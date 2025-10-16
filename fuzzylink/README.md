@@ -1,6 +1,11 @@
 # Record Linkage
 Let’s say you have two records: one is an L2 voter file with ~22 million registered voters from California and the second is the California Election Data Archive (CEDA), containing the names of over 9,000 candidates from public office. Now, because of the different information contained in each file, you may have a research question that would require information from both datasets. However, to merge the two files, you need to have a procedure to identify if person A in the L2 file is the same as person B from the CEDA file. Unfortunately, in the two files, spelling errors, nicknames, middle names, etc. might prevent there being a single shared variable (i.e. "full name") that unambiguously identifies that the two records refer to the same person. Because of this, researchers must rely on _fuzzy record linkage_, which links records based on a certain degree of similarity as opposed to exact matches. 
 
+<!--
+If an image showcasing what record linkage is would be helpful, I like the one available here: https://dbs.uni-leipzig.de/research/projects/pprl 
+-->
+
+
 ## What is Fuzzylink?
 
 In his paper “Probabilistic Record Linkage Using Pretrained Text Embeddings,” Joseph Ornstein developed a probabilistic record linkage procedure (dubbed “fuzzylink”) that relies on large language models (LLMs) to determine if two records, `A` and `B`, refer to the same entity [^1]. His use of LLMs allow records to be linked based on _semantic_ similarity as opposed to simply lexical similarity. His procedure can be summarized in these six steps:
