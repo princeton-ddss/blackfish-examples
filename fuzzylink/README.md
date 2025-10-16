@@ -117,11 +117,11 @@ Once the port numbers, api key, and file save name/pathway have been updated in 
 ## How well did your models preform?
 In his paper, Ornstein used OpenAI for getting the embeddings and the Y/N responses. In his discussion he claimed, "Because these models are closed-source and operated by for-profit entities...the results that fuzzylink produces—including those presented in this article—are not fully reproducible." He states that, while open-source models would solve this problem, the accuracy provided by OpenAI's state-of-the-art closed source models is worth the cost and inability to reproduce his results; Ornstein’s estimated precision and recall were both 95.8%. Precision is a measure of the fraction of identified matches are correct ($\\frac{true  positives}{true  positives + false  positives}$) while recall measures the fraction of matches which were identified ($\\frac{true  positives}{true  positives + false  negatives}$).
 
-If you want to assess how well your model's performed to compare your results to his, you're going to need two more files (available for download [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/7U5KEJ): `hand_labels.RData` and `recall.RData`. *It is important to note that, due to the nature of the recall file provided, some false negatives may be missing in the recall calculation.*
+If you want to assess how well your models performed to compare your results to his, you're going to need two more files (available for download [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/7U5KEJ): `hand_labels.RData` and `recall.RData`. *It is important to note that, due to the nature of the recall file provided, some false negatives may be missing in the recall calculation.*
 
-To measure your models' precision and accuracy, open `006_link-candidates.R` in `fuzzylink-for-blackfish` and update `file_save_name` to be the name of the file containing the results from running the fuzzylink code (this should match the `file_save_name` from `001_link-candidates.R`). Similarly, update `rdata_pathway` to be the full pathway to where the .RData files are being stored. Now, you can simply run this file!
+To measure your models' precision and accuracy, open `006_link-candidates.R` in your `fuzzylink-for-blackfish` directory, and update `file_save_name` to be the name of the file containing the results from running the fuzzylink code (this should match the `file_save_name` from `001_link-candidates.R`). Similarly, update `rdata_pathway` to be the full pathway to where all the .RData files are being stored. Now, you can simply run this file--let us know how well your open-source models perform!
 
-Below, we also report the precisions and recalls for various text generation models that we've tried (the same embedding model was used for all)
+Below, we also report the precisions and recalls for various text generation models that we've tried (the `TinyLlama/TinyLlama-1.1B-Chat-v1.0` model was used for all embeddings)
 
 | Text Generation Model | Precision | Recall |
 | ------ | ------- | ------|
@@ -131,7 +131,7 @@ Below, we also report the precisions and recalls for various text generation mod
 | swiss-ai/Apertus-8B-Instruct-2509 | 0.9952038 | 0.9284116 |
 | Mistralai/Mixtral-8x7B-Instruct-v0.1 | 1.000000 | 0.895082 |
 
-While the closed-source OpenAI models might have a higher recall, our open-source models all have higher precisions; it appears that the open-source models simply identify fewer matches than the closed-source ones. Therefore, fuzzylink using these models might miss more correct matches, but will also produce fewer incorrect matches. Overall, we believe that the performance of the open-source models is comparable to the closed-source ones used by Ornstein and worth it to get free, reproducible results!
+While the closed-source OpenAI models might have a higher recall, our open-source models all have higher precisions; it appears that the open-source models simply identify fewer matches than the closed-source ones. Therefore, the linkage procedure using these models might miss more correct matches, but will also produce fewer incorrect matches. Overall, we believe that the performance of the open-source models is comparable to the closed-source ones used by Ornstein and worth it to get free, reproducible results!
 
 
 
