@@ -172,9 +172,10 @@ Not all models support passing the `--task embed` argument to the `vLLM` service
 | Qwen/QwQ-32B                               | 5120      | 
 | TinyLlama/TinyLlama-1.1B-Chat-v1.0         | 2048      |
 
-[^3]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector` when trying to run the fuzzylink code, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzylink prompt might solve the issue. I’ve left the prompt as-is and stuck to more powerful models that returned properly formatted responses.
+
 [^1]: Ornstein, J. T. (2025). Probabilistic Record Linkage Using Pretrained Text Embeddings. Political Analysis, 1–12
-[^2]: If you decide to use a different model, make sure that it is compatible with the `--task embed` argument. To see a select number of models that are compatible with this argument, visit [the Blackfish README](https://github.com/princeton-ddss/blackfish)
+[^2]: If you decide to use a different model, make sure that it is compatible with the `--task embed` argument. To see a select number of models that are compatible with this argument, visit [the Blackfish README](https://github.com/princeton-ddss/blackfish) or refer to "Some Extra Details" at the bottom of this page.
+[^3]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector` when trying to run the fuzzylink code, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzylink prompt might solve the issue. I’ve left the prompt as-is and stuck to more powerful models that returned properly formatted responses.
 [^4]: If you leave the api key parameter empty, the fuzzylink code will, by default, try to get an OpenAI api key from your system's environment. If you don't have one, this will cause no problems, and the local model will be able to run without an api key specified. However, if you did not set an `--api-key` when starting your services AND you have an OpenAI api key findable in your system's environment, you will likely encounter an error and will need to define an `--api-key` to use for your local models.
 
 
