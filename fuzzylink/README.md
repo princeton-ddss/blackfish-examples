@@ -98,7 +98,7 @@ df <- BFfuzzylink::fuzzylink(
 )
 ```
 Some important things the function call specifies:
-- the files used (`ceda` and `l2`)
+- the files used (`ceda` and `l2`); dfB will be "mapped onto" dfA, meaning all records from dfA will be maintained with any matches from dfB added on
 - the variable that fuzzylink is trying to match on (`fullname`)
 - the blocking variables that reduces the potential matches (`last [name]`, `place`, and `cntyname`)
 - the type of record found in the files (`person`)
