@@ -1,4 +1,135 @@
-# FuzzyLink
+## What is Fuzzylink?
+Let’s say you have two records: one is an L2 voter file with ~22 million registered voters from California and the second is the California Election Data Archive (CEDA), containing the names of over 9,000 candidates from public office. Now, because of the different information contained in each file, you may have a reserch question that would require information from both datasets. However, in order to merge the two files, you need to have a procedure to identify if person A in the L2 file is the same as person B from the CEDA file. Unfortunately, in the two files, spelling errors, nicknames, middle names, etc. might prevent there being a single shared variable (ie. "full name") that unambiguously identifies that the two records refer to the same person. Because of this, researchers must rely on _fuzzy record linkage_, which links records based on a certain degree of similarity as opposed to exact matches. 
+
+In his paper “Probabilistic Record Linkage Using Pretrained Text Embeddings,” Joseph Ornstein developed a probabilistic record linkage procedure (dubbed “fuzzylink”) which relies on large language models (LLMs) to determine if two records refer to the same entity [^1]. His use of LLMs allow records to be linked based on _semantic_ similarity as opposed to simply lexical similarity. His procedure can be summarized in these six steps:
+1. Use a model to retrieve text embeddings for the string variables in records _A_ and _B_.
+2. Compute the cosine similarity between the embedding vectors for each pair of records in the set _A_ x _B_, blocking, if possible, to improve efficiency.
+3. Using a subset of the record pairs, label a training set with 1 if the records are a true match and 0 if they are not.
+4. Fit a probabilistic model to map the cosign similarities *(from the labeled subset??)* onto a match probability.
+5. Using the fitted model from step 4, estimate match probabilities for all record pairs in _A_ X _B_. Select _N<sub>L</sub>_ record pairs using uncertainty sampling and label them as in Step 3; add these to the training set and repeat steps 4-5 until some criterion is met. (Ornstein stopped when none of the estimated probabilities changed by more than 0.01 between iterations.)
+6. Return all record pairs and their match probability.
+
+Though his procedure outperformed other, prexisting algorithms in both precision and recall, his use of closed-source models meant that the models were (1) not free to use and (2) could be modified at any time. When a model is modified or deprecated, any results that were obtained using Ornstein’s method on that model are not fully reproducible.
+
+If you need to merge two records using Ornstein's probabilistic record linkage procedure and want to do it easily, transparently, and for free, you can use Blackfish to run open-source models on a HPC cluster. You will know exactly what models you are using, and your results can be reproduced by anyone with access to the same model. The following tutorial will walk through all the steps you need to take to use Ornstein’s fuzzylink approach on your HPC cluster. 
+
+## Setting Up
+This tutorial is going to walk through using `fuzzylink` to merge the L2 voter file and CEDA file described above using blackfish. Some notes before we begin:
+- You should have blackfish installed and setup. For instructions on how to do this, visit [the blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/).
+- While it is possible to run blackfish locally on a laptop (using a 'local' profile), for the models we will be running, access to a HPC will likely be necessary to store and run the models. Refer to [the blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/) to set up a profile to run jobs on your HPC.
+- The original data we will be using is available for download [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/7U5KEJ). The files you will need are `ceda.RData` and `L2.RData`.
+
+You will also need to obtain the `fuzzylink` code. Ornstein created an R package that can be installed from CRAN, but that package only works with Mistral and OpenAI models. For this example, I’ve modified Ornstein’s package to work with the vLLM server used by Blackfish--to use the updated version of fuzzylink [clone this repository](https://github.com/princeton-ddss/fuzzylink-for-blackfish) by typing the following in your terminal:
+```shell
+git clone git@github.com:princeton-ddss/fuzzylink-for-blackfish.git
+```
+This will create a directory called `fuzzylink-for-blackfish` which will house the code to run the fuzzy record linkage.
+
+## Running the Blackfish Services
+Now that you have your data files, the fuzzylink code, and blackfish set up, you're ready to start. 
+
+If you pip installed blackfish in a virtual environment, activate that virtual environment. Before we start any service, let's start the blackfish API by typing
+```shell
+blackfish start
+```
+in the command line. If everything worked, you should see a message stating the application startup is complete. 
+
+For this application, you will need two services: one service to get the text embeddings (from step 1 in the fuzzylink procedue) and another to asses if the records refer to the same person (from step 3). If you have used blackfish before and already have some models installed, you might be able to use your preexisting models, which can be seen by running
+```shell
+blackfish model ls
+```
+However, for the sake of this tutorial, we will assume you have no existing models. Let's start the embedding service first. We are going to use the `TinyLlama/TinyLlama-1.1B-Chat-v1.0` from Hugging Face, though feel free to experiment with different models. To [download this model](https://princeton-ddss.github.io/blackfish/latest/#step-4-obtain-a-model), type
+```shell
+blackfish model add TinyLlama/TinyLlama-1.1B-Chat-v1.0
+```
+Once this has finished downloading, you should be able to see it by typing
+```shell
+blackfish model ls --refresh
+```
+Now that you have that model, you can use it to start your service! This is technically a text generation model, but we can use it for text embeddings by adding the `--task embed` argument to our command [^2]. To start this service, type
+```shell
+blackfish run --gres 1 --mem 16 --ntasks-per-node 4 --time 00:30:00 --constraint 'amd&gpu40' text-generation TinyLlama/TinyLlama-1.1B-Chat-v1.0 --api-key sealsaretasty --task embed
+```
+into the terminal. You can feel to change/remove the `api-key` as you desire and update the `time` to best suit your needs. If all goes well, you should get a message that the service was succesfully started. You can monitor your services by typing
+```shell
+blackfish ls
+```
+The service status should change from "PENDING" to “STARTING” shortly, but will take a few minutes to change to “HEALTHY.” While waiting, let's start working on the second service. For this tutorial, we are going to use the `meta-llama/Llama-3.3-70B-Instruct` model. If you don't have it already, download it by typing
+```shell
+blackfish model add meta-llama/Llama-3.3-70B-Instruct
+```
+You can again confirm that it was added by typing
+```shell
+blackfish model ls --refresh
+```
+To start this service, enter the following command
+```shell
+blackfish run --grace-period 600 --gres 4 --mem 16 --ntasks-per-node 4 --time 00:30:00  --constraint gpu80 text-generation meta-llama/Llama-3.3-70B-Instruct --api-key sealsaretasty
+```
+If you chose to update/remove the `api-key`, it is important to note that it must match the one you chose for the embedding service. If you encounter an `huggingface_hub.errors.GatedRepoError: 401 Client Error`, you may need to explicitly specify the model revision in your command. You can see the revision by typing
+```shell
+blackfish ls
+```
+and can simply add the model's revision to the end of your command (ie. `... --api-key sealsaretasty --revision 6f6073b423013f6a7d4d9f39144961bfbfbc386b`). You will need to wait until both models' status is "HEALTHY" before you can use the services, which might take 5-10 minutes depending on your model of choice. Once both services are "STARTING," though, you can get their port numbers. Again, type 
+```shell
+blackfish ls
+```
+and take note of the port number for the embedding service and the regular text generation service. For the rest of this tutorial, we'll assume the embedding service is running on port 8080 and the text generation service is running on 8081. While those services finish starting, we can hop to the next step.
+
+
+## Running Fuzzylink
+Make sure you are in the cloned `fuzzylink-for-blackfish` directory. In `001_link-candidates.R`, first, change the `file_save_name` variable to equal the name you wish to use for your output file. This output file will contain all the records from the CEDA file with any identified L2 file matches joined onto them. Additionlly, modify `rdata_pathway` to be the pathway to the directory which contains your downloaded .RData files (this will also be where the fuzzylink output gets saved). You can then modify the following call to fuzzylink:
+```R
+df <- BFfuzzylink::fuzzylink(
+ dfA = ceda,
+ dfB = l2,
+ by = 'fullname',
+ blocking.variables = c('last', 'place', 'cntyname'),
+ record_type = 'person',
+ instructions = 'The first name comes from a list of candidates for public office in California. The second name comes from a voter registration file. Bear in mind that some candidates may run for office under a nickname or middle name, and some records may contain spelling errors.',
+ fmla = fmla,
+ learner = learner,
+ openai_api_key = "sealsaretasty",
+ model = "EMPTY",
+ embedding_model = "EMPTY",
+ embedding_port_num = 8080,
+ text_gen_port_num = 8081,
+ embedding_dimensions = 2048 
+)
+```
+Some important things the function call specifies:
+- the files used (`ceda` and `l2`)
+- the variable that fuzzylink is trying to match on (`fullname`)
+- the blocking variables that reduces the potential matches (`last [name]`, `place`, and `cntyname`)
+- the type of record found in the files (`person`)
+- specific instructions to provide the LLM for additional context
+- the `openai_api_key` which would, in the original code, be used to get access to the closed-source OpenAI models. This has been repurposed for our needs.
+- the LLM that is being used to identifym matches (`model`)
+- the embedding model that is used to generate the text embeddings (`embedding_model`)
+- the port numbers which the _local_ models are running on (`embedding_port_num` and `text_gen_port_num`)
+- and the dimension of the text embedding vector (`embedding_dimensions`)
+
+You are going to want to make sure that both `model` and `embedding_model` are set to `"EMPTY"` as this indicates that they are running locally. You should also update the `open_api_key` so that it matches what you set as your `--api-key` when initiating the services (or can be removed/left empty if you did not set one[^3]). Also confirm that the `embedding_port_num` and `text_gen_port_num` match the port numbers your services are running on. If you used a different model than the `TinyLlama/TinyLlama-1.1B-Chat-v1.0` for your embeddings, you might also need to change `embedding_dimensions`.
+
+Once the port numbers, api key, and file save name/pathway have been updated in `001_link-candidates.R`, you are ready to go! Wait until the status of both your services is "HEALTHY," then start an R session. Make sure your session's working directory is set to the directory containing the fuzzylink package (you can type `setwd("path/to/fuzzylink-for-blackfish/")` to do this manually), type `devtool::load_all()`, then simply run the 001_link-candidates file! It should take a few minutes to run and will save the results to a .RData file with the name you specified in the `file_save_name` variable. 
+
+
+
+
+
+[^1]: Ornstein, J. T. (2025). Probabilistic Record Linkage Using Pretrained Text Embeddings. Political Analysis, 1–12
+[^2]: If you decide to use a differnt model, make sure that it is compatible with the `--task embed` argument. To see a select number of models that are compatible with this argument, visit [the blackfish README](https://github.com/princeton-ddss/blackfish)
+[^3]: If you leave the api key parameter empty, the fuzzylink code will, by default, try to get an OpenAI api key from your system's environment. If you don't have one, this will cause no problems, and the local model will be able to run without an api key specified. However, if you did not set an `--api-key` when starting your services AND you have an OpenAI api key findable in your system's environment, you will likely encounter an error and will need to define an `--api-key` to use for your local models.
+
+
+
+
+
+
+
+
+<!-- 
+# Old:
 In his paper “Probabilistic Record Linkage Using Pretrained Text Embeddings,” Joseph Ornstein developed a probabilistic record linkage procedure (dubbed “fuzzylink”) which relies on large language models to determine if two records refer to the same entity. Though his procedure outperformed other algorithms in both precision and recall, his use of closed-source models meant that the models were (1) not free to use and (2) could be modified at any time. When a model is modified or deprecated, any results that were obtained using Ornstein’s method on that model are not fully reproducible. 
 
 Ornstein's fuzzylink algorithm can be broken into the following steps:
@@ -13,7 +144,7 @@ Ornstein's fuzzylink algorithm can be broken into the following steps:
 
 If you need to merge two records using Ornstein's probabilistic record linkage procedure and want to do it easily, transparently, and for free, you can use Blackfish to run open-source models on a HPC cluster. You will know exactly what models you are using, and your results can be reproduced by anyone with access to the same model. The following tutorial will walk through all the steps you need to take to use Ornstein’s fuzzylink approach on your HPC cluster. 
 
-_The motivation for this example and the original fuzzylink code are all attributed to Joseph Ornstein; Ornstein, J. T. (2025). Probabilistic Record Linkage Using Pretrained Text Embeddings. Political Analysis, 1–12._
+
 
 
 ## Data
@@ -151,3 +282,5 @@ Models that support --task embed:
 [^2]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector`, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzylink prompt might solve the issue. I’ve left the prompt as-is and stuck to models that returned properly formatted responses.
 [^3]: In this fuzzylink call, `embedding_dimensions` is set to 2048; this is the length of the embedding vector which the TinyLlama/TinyLlama-1.1B-Chat-v1.0 model creates. If you decide to use a different model, you may want to edit this number to have it match that model's specific embedding dimensions. A list of models with their embedding dimensions is COMING SOON.
 [^4]: If you leave the api key parameter empty, the fuzzylink code will, by default, try to get an OpenAI api key from your system's environment. If you don't have one, this will cause no problems, and the local model will be able to run without an api key specified. However, if you did not set an `--api-key` when starting your services AND you have an OpenAI api key findable in your system's environment, you will likely encounter an error and will need to define an `--api-key` to use for your local models.
+-->
+
