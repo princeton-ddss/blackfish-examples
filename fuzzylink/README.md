@@ -16,7 +16,7 @@ In his paper “Probabilistic Record Linkage Using Pretrained Text Embeddings,�
 5. Using the fitted model, estimate match probabilities for all record pairs in `A x B`. Select `N` record pairs using uncertainty sampling and label them as in Step 3; add these to the training set and repeat Step 4 and 5 until the estimated likelihoods stabilize.
 6. Return all record pairs and their match probability.
 
-Though his procedure outperforms other, preexisting algorithms in terms of both precision and recall, his findings rely on the use of closed-source models and are therefore subject to potential cost/scaling, privacy, and replication concerns.
+Though his procedure outperforms other, preexisting algorithms in terms of both precision and recall, his findings rely on the use of closed-source models and are therefore subject to potential cost/scaling, privacy, and replication concerns. 
 
 If you need to merge two records using Ornstein's probabilistic record linkage procedure and want to do it easily, transparently, and for free, you can use Blackfish to run open-source models on a HPC cluster. You will know exactly what models you are using, and your results can be reproduced by anyone with access to the same model. The following tutorial will walk through all the steps you need to take to use Ornstein’s fuzzylink approach on your HPC cluster. 
 
@@ -27,11 +27,13 @@ This tutorial is going to walk through using `fuzzylink` to merge the L2 voter f
 - This example assumes you are working in an environment where Blackfish is installed and setup to work with an HPC cluster. For instructions on how to do this, visit [the Blackfish documentation](https://princeton-ddss.github.io/blackfish/latest/getting_started/).
 - The original data we will be using is available for download [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/7U5KEJ). The files you will need are `ceda.RData` and `L2.RData` for matching the records, and `hand_labels.RData` and `recall.RData` for evaluating performance. 
 
+<!--
 You will also need to obtain the `fuzzylink` code. Ornstein created an R package that can be installed from CRAN, but that package only works with closed-source models. This example demonstrates how to use `fuzzylink` with *open-source* models using Blackfish and `text-generation` services. To use the updated version of fuzzylink [clone this repository](https://github.com/princeton-ddss/fuzzylink-for-blackfish) by typing the following in your terminal:
 ```shell
 git clone git@github.com:princeton-ddss/fuzzylink-for-blackfish.git
 ```
 This will create a directory called `fuzzylink-for-blackfish` which will house the code to run the fuzzy record linkage.
+-->
 
 Finally, to obtain the files to preprocess the data and call the fuzzylink code, either clone this directory by typing
 ```shell
@@ -40,7 +42,7 @@ git clone git@github.com:princeton-ddss/blackfish-examples.git
 in your terminal, or directly download the `001_link-candidates.R` and `006_link-candidates.R` files, as these are the only ones you'll be needing. 
 
 ## Running the Blackfish Services
-Now that you have your data files, the fuzzylink code, and Blackfish set up, you're ready to start. 
+Now that you have your data files, the code, and Blackfish set up, you're ready to start. 
 
 If you installed Blackfish in a virtual environment, activate that virtual environment. Before we start any service, let's start the Blackfish API by typing
 ```shell
@@ -92,7 +94,17 @@ and take note of the port number for the embedding service and the regular text 
 
 
 ## Running Fuzzylink
-Make sure you've installed the `fuzzylink-for-blackfish` package. First, we'll run an R script to match the candidate records to L2, `001_link-candidates.R`. Before running the script, modify the following constants to match your Blackfish deployments:
+To install the `fuzzylink-for-blackfish` package containing the modified `fuzzylink` code, you can use devtools or pak. To use devtools, type the following in your R session:
+```shell
+install.packages("devtools")
+devtools::install_github("princeton-ddss/fuzzylink-for-blackfish")
+```
+To use pak:
+```shell
+install.packages("pak")
+pak::pkg_install("princeton-ddss/fuzzylink-for-blackfish")
+```
+After you've installed the `fuzzylink-for-blackfish` package, you'll be able to make calls to `BFfuzzylink::fuzzylink` directly. First, we'll run an R script to match the candidate records to L2, `001_link-candidates.R`. Before running the script, modify the following constants to match your Blackfish deployments:
 ```R
 data_dir <- "./data"
 openai_api_key <- "sealsaretasty"
