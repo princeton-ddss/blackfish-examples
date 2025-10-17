@@ -9,7 +9,7 @@ If an image showcasing what record linkage is would be helpful, I like the one a
 ## What is Fuzzylink?
 
 In his paper “Probabilistic Record Linkage Using Pretrained Text Embeddings,” Joseph Ornstein developed a probabilistic record linkage procedure (dubbed “fuzzylink”) that relies on large language models (LLMs) to determine if two records, `A` and `B`, refer to the same entity [^1]. His use of LLMs allow records to be linked based on _semantic_ similarity as opposed to simply lexical similarity. His procedure can be summarized in these six steps:
-1. Use a model to retrieve text embeddings for the string representation of `A` and `B`.
+1. Use a model to retrieve text embeddings for the string representations of `A` and `B`.
 2. Compute the cosine similarity between each pair of embedding vectors in the set `A x B`, using blocking, if possible, to improve efficiency.
 3. Label a training set using a LLM to identify "true" matches for a subset of the record pairs.
 4. Using the labeled data, fit a model to predict the likelihood of a match given cosine similarity.
@@ -42,11 +42,11 @@ in your terminal, or directly download the `001_link-candidates.R` and `006_link
 ## Running the Blackfish Services
 Now that you have your data files, the fuzzylink code, and Blackfish set up, you're ready to start. 
 
-If you pip installed Blackfish in a virtual environment, activate that virtual environment. Before we start any service, let's start the Blackfish API by typing
+If you installed Blackfish in a virtual environment, activate that virtual environment. Before we start any service, let's start the Blackfish API by typing
 ```shell
 blackfish start
 ```
-in the command line. If everything worked, you should see a message stating the application startup is complete. Leave this running and open a new terminal tab/window.
+in the command line. If everything worked, you should see a message stating the application startup is complete. Leave this running and open a new terminal tab/window (again activating your vitual environment if using one).
 
 For this application, you will need two services: one service to generate embeddings (from step 1 in the fuzzylink procedure) and another to assess if the records refer to the same person (from step 3). If you have used Blackfish before and already have some models installed, you might be able to use your preexisting models, which can be seen by running
 ```shell
@@ -101,7 +101,7 @@ text_gen_port_num <- 8081
 embedding_dimensions <- 2048
 ```
  
-(If you aren't using an API key, you can set this to `null`). The output of this script (`matches.RData`) contains all the CEDA records for which `fuzzylink` found a match in the L2 file. Note that the call to `BFfuzzylink::fuzzylink` sets both `model` and `embedding_model` to `"EMPTY"`. This is used to indicate to the API that we are running models locally. Wait until the status of both your services is "HEALTHY," then start the script. 
+(If you aren't using an API key, you can set this to `null`[^4]). The output of this script (`matches.RData`) contains all the CEDA records for which `fuzzylink` found a match in the L2 file. Note that the call to `BFfuzzylink::fuzzylink` sets both `model` and `embedding_model` to `"EMPTY"`. This is used to indicate to the API that we are running models locally. Wait until the status of both your services is "HEALTHY," then start the script. 
 
 ## How well did your models preform?
 
