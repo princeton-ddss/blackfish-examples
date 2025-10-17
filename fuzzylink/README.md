@@ -78,50 +78,21 @@ and take note of the port number for the embedding service and the regular text 
 
 
 ## Running Fuzzylink
-Make sure you are in the cloned `fuzzylink-for-blackfish` directory. In `001_link-candidates.R`, first, change the `file_save_name` variable to equal the name you wish to use for your output file. This output file will contain all the records from the CEDA file with any identified L2 file matches joined onto them. Additionally, modify `rdata_pathway` to be the pathway to the directory which contains your downloaded .RData files (this will also be where the fuzzylink output gets saved). You can then modify the following call to fuzzylink:
+Make sure you've installed the `fuzzylink-for-blackfish` package. First, we'll run an R script to match the candidate records to L2, `001_link-candidates.R`. Before running the script, modify the following constants to match your Blackfish deployments:
 ```R
-df <- BFfuzzylink::fuzzylink(
- dfA = ceda,
- dfB = l2,
- by = 'fullname',
- blocking.variables = c('last', 'place', 'cntyname'),
- record_type = 'person',
- instructions = 'The first name comes from a list of candidates for public office in California. The second name comes from a voter registration file. Bear in mind that some candidates may run for office under a nickname or middle name, and some records may contain spelling errors.',
- fmla = fmla,
- learner = learner,
- openai_api_key = "sealsaretasty",
- model = "EMPTY",
- embedding_model = "EMPTY",
- embedding_port_num = 8080,
- text_gen_port_num = 8081,
- embedding_dimensions = 2048 
-)
+data_dir <- "./data"
+openai_api_key <- "sealsaretasty"
+embedding_port_num <- 8080
+text_gen_port_num <- 8081
+embedding_dimensions <- 2048
 ```
-Some important things the function call specifies:
-- the files used (`ceda` and `l2`); dfB will be "mapped onto" dfA, meaning all records from dfA will be maintained with any matches from dfB added on
-- the variable that fuzzylink is trying to match on (`fullname`)
-- the blocking variables that reduces the potential matches (`last [name]`, `place`, and `cntyname`)
-- the type of record found in the files (`person`)
-- specific instructions to provide the LLM for additional context
-- the `openai_api_key` which would, in the original code, be used to get access to the closed-source OpenAI models. This has been repurposed for our needs.
-- the LLM that is being used to identify matches (`model`)
-- the embedding model that is used to generate the text embeddings (`embedding_model`)
-- the port numbers which the _local_ models are running on (`embedding_port_num` and `text_gen_port_num`)
-- and the dimension of the text embedding vector (`embedding_dimensions`)
-
-You are going to want to make sure that both `model` and `embedding_model` are set to `"EMPTY"` as this indicates that they are running locally. You should also update the `open_api_key` so that it matches what you set as your `--api-key` when initiating the services (or can be removed/left empty if you did not set one[^4]). Also confirm that the `embedding_port_num` and `text_gen_port_num` match the port numbers your services are running on. If you used a different model than the `TinyLlama/TinyLlama-1.1B-Chat-v1.0` for your embeddings, you might also need to change `embedding_dimensions`.
-
-Once the port numbers, api key, and file save name/pathway have been updated in `001_link-candidates.R`, you are ready to go! Wait until the status of both your services is "HEALTHY," then start an R session. Make sure your session's working directory is set to the directory containing the fuzzylink package (you can type `setwd("path/to/fuzzylink-for-blackfish/")` to do this manually), type `devtool::load_all()`, then simply run the 001_link-candidates file! It should take a few minutes to run and will save the results to a .RData file with the name you specified in the `file_save_name` variable. 
-
+ 
+(If you aren't using an API key, you can set this to `null`). The output of this script (`matches.RData`) contains all the CEDA records for which `fuzzylink` found a match in the L2 file. Note that the call to `BFfuzzylink::fuzzylink` sets both `model` and `embedding_model` to `"EMPTY"`. This is used to indicate to the API that we are running models locally. Wait until the status of both your services is "HEALTHY," then start the script. 
 
 ## How well did your models preform?
-In his paper, Ornstein used OpenAI for getting the embeddings and the Y/N responses. In his discussion he claimed, "Because these models are closed-source and operated by for-profit entities...the results that fuzzylink produces—including those presented in this article—are not fully reproducible." He states that, while open-source models would solve this problem, the accuracy provided by OpenAI's state-of-the-art closed source models is worth the cost and inability to reproduce his results; Ornstein’s estimated precision and recall were both 95.8%. Precision is a measure of the fraction of identified matches are correct ($\\frac{true  positives}{true  positives + false  positives}$) while recall measures the fraction of matches which were identified ($\\frac{true  positives}{true  positives + false  negatives}$).
+In his paper, Ornstein used OpenAI to obtain embeddings and match labels. In his discussion he claims that "Because these models are closed-source and operated by for-profit entities... the results that fuzzylink produces—including those presented in this article—are not fully reproducible." He also claims that, while open-source models would solve this problem, the accuracy provided by OpenAI's state-of-the-art closed source models is worth the cost and inability to reproduce his results. That sounds like a challenge! (This seems like good motivation for the example–maybe this should be stated in the introduction?)
 
-If you want to assess how well your models performed to compare your results to his, you're going to need two more files (available for download [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/7U5KEJ): `hand_labels.RData` and `recall.RData`. *It is important to note that, due to the nature of the recall file provided, some false negatives may be missing in the recall calculation.*
-
-To measure your models' precision and accuracy, open `006_link-candidates.R` in your `fuzzylink-for-blackfish` directory, and update `file_save_name` to be the name of the file containing the results from running the fuzzylink code (this should match the `file_save_name` from `001_link-candidates.R`). Similarly, update `rdata_pathway` to be the full pathway to where all the .RData files are being stored. Now, you can simply run this file--let us know how well your open-source models perform!
-
-Below, we also report the precisions and recalls for various text generation models that we've tried (the `TinyLlama/TinyLlama-1.1B-Chat-v1.0` model was used for all embeddings)
+`006_link-candidates.R` is a modified version of Ornstein's R code to analyze the performance of `fuzzylink` on the candidate matching exercise. You can analyze your model's performance by first updating the `data_dir` and then running the script. The script calculates two performance metrics: precision and recall. Precision (also known as "specificity") is the probability that a predicted match is *actually* a match; recall (also known as "sensitivity") is the probability that an actual match is predicted to be a match. We want both of these metrics to be as close to `1.0` as possible. Ornstein’s estimated precision and recall are both 95.8%. Below, we report our results for various text generation models that we've tested (`TinyLlama/TinyLlama-1.1B-Chat-v1.0` is used for embeddings in all cases).
 
 | Text Generation Model | Precision | Recall |
 | ------ | ------- | ------|
@@ -131,14 +102,15 @@ Below, we also report the precisions and recalls for various text generation mod
 | swiss-ai/Apertus-8B-Instruct-2509 | 0.9952038 | 0.9284116 |
 | Mistralai/Mixtral-8x7B-Instruct-v0.1 | 1.000000 | 0.895082 |
 
-While the closed-source OpenAI models might have a higher recall, our open-source models all have higher precisions; it appears that the open-source models simply identify fewer matches than the closed-source ones. Therefore, the linkage procedure using these models might miss more correct matches, but will also produce fewer incorrect matches. Overall, we believe that the performance of the open-source models is comparable to the closed-source ones used by Ornstein and worth it to get free, reproducible results!
+ The results demonstrate that the open-source models identify fewer matches than the closed-source ones[^5], but match candidates with higher precision. Overall, the performance of the open-source models is comparable to the closed-source ones used by Ornstein and worth it to get free, reproducible results!
 
 
 
 [^3]: If you get the error message `Error in family$linkfun(mustart) : Argument mu must be a nonempty numeric vector` when trying to run the fuzzylink code, this is because the model did not respond with a strictly ‘Yes’ or ‘No’ response. Modifying the fuzzylink prompt might solve the issue. I’ve left the prompt as-is and stuck to more powerful models that returned properly formatted responses.
 [^1]: Ornstein, J. T. (2025). Probabilistic Record Linkage Using Pretrained Text Embeddings. Political Analysis, 1–12
 [^2]: If you decide to use a different model, make sure that it is compatible with the `--task embed` argument. To see a select number of models that are compatible with this argument, visit [the blackfish README](https://github.com/princeton-ddss/blackfish)
-[^4]: If you leave the api key parameter empty, the fuzzylink code will, by default, try to get an OpenAI api key from your system's environment. If you don't have one, this will cause no problems, and the local model will be able to run without an api key specified. However, if you did not set an `--api-key` when starting your services AND you have an OpenAI api key findable in your system's environment, you will likely encounter an error and will need to define an `--api-key` to use for your local models.
+[^4]: If you leave the api key parameter empty, the `fuzzylink` code will, by default, try to get an OpenAI api key from your system's environment. If you don't have one, the local model will still be able to run if you having specified an API key for your services. However, if you did not set an `--api-key` when starting your services *and** you have an OpenAI key available in your system's environment, you will likely encounter an error and will need to define an `--api-key` to use for your local models.
+[^5] Note about difference in recall measures...
 
 
 
