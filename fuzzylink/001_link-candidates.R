@@ -5,28 +5,28 @@
 #' version: 0.4
 #' ---
 
-rm(list = ls())
-
 library(tidyverse)
 library(glue)
 
+# Update these to match your Blackfish services!
+data_dir <- "./data"
+openai_api_key <- "sealsaretasty"
+embedding_port_num <- 8080
+text_gen_port_num <- 8081
+embedding_dimensions <- 2048
 
-file_save_name <- "desired_output_filename"
-rdata_pathway <- "pathway/to/downloaded/RData/files/"
+## Load and clean raw datasets
+load(paste0(data_dir, "ceda.RData"))
+load(paste0(data_dir, "L2.RData"))
 
-## Load and clean raw datasets -----------------
-
-load(paste0(rdata_pathway, "ceda.RData")) # CEDA
-load(paste0(rdata_pathway, "L2.RData")) # selected L2 data from Alameda, Kern, and Ventura counties
-
-# for this application, just keep Alameda, Kern, and Ventura county candidates since 2016
+# Keep Alameda, Kern, and Ventura county candidates since 2016
 ceda <- ceda |>
   filter(cntyname %in% c('ALAMEDA', 'KERN', 'VENTURA'),
          date > '2016-01-01')
 
-# create fuzzy string and blocking variables
+# Create fuzzy string and blocking variables
 ceda <- ceda |>
-  # convert UTF-8 encoding to ASCII for blocking.variables
+  # Convert UTF-8 encoding to ASCII for blocking.variables
   # (L2 data doesn't include characters with accents or tildes)
   mutate(
     first = iconv(first, to = 'ASCII//TRANSLIT'),
@@ -34,12 +34,12 @@ ceda <- ceda |>
     place = iconv(place, to = 'ASCII//TRANSLIT')
   ) |>
   mutate(fullname = str_squish(glue('{first} {last}', .na = ''))) |>
-  # remove suffixes from last names for blocking
+  # Remove suffixes from last names for blocking
   mutate(last = str_remove_all(
     last,
     ' Jr.|, Jr.| Jr|, Jr| Sr.|, Sr.| Sr|, Sr|, III| III|, II| II|, IV| IV'
   )) |>
-  # harmonize place names
+  # Harmonize place names
   mutate(
     place = case_when(
       place == 'Union' ~ 'Union City',
@@ -67,16 +67,11 @@ l2 <- l2 |>
   rename(cntyname = County)
 
 
-## fuzzylink ---------------
-
-# this script performs the record linkage reported in the main text;
-# to reproduce variants reported in the appendix, modify
-# model, fmla, or learner
-
+## Perform record linkage with fuzzylink
 fmla <- match ~ sim + jw
 learner <- 'glm'
 
-df <- BLfuzzylink::fuzzylink(
+df <- BFfuzzylink::fuzzylink(
   dfA = ceda,
   dfB = l2,
   by = 'fullname',
@@ -85,13 +80,12 @@ df <- BLfuzzylink::fuzzylink(
   instructions = 'The first name comes from a list of candidates for public office in California. The second name comes from a voter registration file. Bear in mind that some candidates may run for office under a nickname or middle name, and some records may contain spelling errors.',
   fmla = fmla,
   learner = learner,
-  openai_api_key = "sealsaretasty",
+  openai_api_key = openai_api_key,
   model = "EMPTY", 
   embedding_model = "EMPTY",
-  embedding_port_num = 8080,
-  text_gen_port_num = 8081,
-  embedding_dimensions = 2048
+  embedding_port_num = embedding_port_num,
+  text_gen_port_num = text_gen_port_num,
+  embedding_dimensions = embedding_dimensions
 )
 
-save(df, file = paste0(rdata_pathway, file_save_name,'.RData'))
-
+save(df, file = paste0(data_dir,'matches.RData'))
