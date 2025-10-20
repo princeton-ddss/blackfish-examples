@@ -19,19 +19,23 @@ requires manually converting each image to PIL data.
 
 We conducted a series of experiments using multiple models to evaluate classification performance on the animal dataset. To evaluate the output, run the script `python evaluate.py`.
 
-### Models Tested 
+### Models 
 
 * google/gemma-3-4b-it
 * google/gemma-3-12b-it
 * google/gemma-3-27b-it
-* meta-llama/Llama-3.2-11B-Vision-Instruct
-* meta-llama/Llama-4-Scout-17B-16E-Instruct
-* meta-llama/Llama-3.2-90B-Vision-Instruct
+* meta-llama/Llama-3.2-11B-Vision-Instruct*
+* meta-llama/Llama-4-Scout-17B-16E-Instruct*
+* meta-llama/Llama-3.2-90B-Vision-Instruct*
 
-### Summary of Preliminary Results
+<small>*Evaluation in progress</small>
 
-| Model             | Accuracy (%) | Avg. Inference Time (s/img) |
-| ----------------- | ------------ | --------------------------- | 
-| google/gemma-3-4b-it       | 87.2         | ?                         |
-| google/gemma-3-12b-it            | 89.5         | ?                        |
-| google/gemma-3-27b-it             | 92.3         | ?                         |
+### Results Summary
+
+| Model             | Accuracy (%) |
+| ----------------- | ------------ | 
+| google/gemma-3-4b-it       | 91.52         | 
+| google/gemma-3-12b-it            | 94.78         | 
+| google/gemma-3-27b-it             | 96.50        |
+
+![Model Results Bar Graph](image_classification_results.png "Model Results Bar Graph")
