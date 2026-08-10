@@ -1,8 +1,8 @@
 # Stochastic Parrot
-Replication code for "How to train your stochastic parrot" () with Blackfish.
+Replication code for "How to train your stochastic parrot" ([Ornstein et al., 2024](https://joeornstein.github.io/publications/ornstein-blasingame-truscott.pdf)) with Blackfish.
 
 ## Data
-The original data is available from [Dataverse](). The files we use here are:
+The original data is available from [Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DZZ0OM). The files we use here are:
 ```shell
 application1-TweetNLP.csv
 application2-carlson-montgomery-2017.csv
