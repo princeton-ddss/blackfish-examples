@@ -1,0 +1,10 @@
+[project]
+name = "blackfish-llm-evaluation"
+version = "0.1.0"
+description = "Evaluate LLMs served by Blackfish with Inspect"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "inspect-ai>=0.3.280",
+    "openai>=1.82.1",
+]
